@@ -1,0 +1,6 @@
+.DS_Store
+.idea
+testdata/*.zip
+testdata/*/*.go
+cmd/brbundle/brbundle
+cmd/brbundle/brbundle.exe
