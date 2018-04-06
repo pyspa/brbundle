@@ -57,7 +57,7 @@ func (f File) Path() string {
 }
 
 func (f File) FileMode() string {
-	return fmt.Sprintf("%#v", f.info.Mode())
+	return fmt.Sprintf("%#of", f.info.Mode())
 }
 
 func (f File) OriginalSize() int64 {

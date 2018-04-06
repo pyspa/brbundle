@@ -118,3 +118,10 @@ func (b Bundle) ReadDirs(path string) ([]FileEntry, error) {
 	}
 	return nil, errors.New("Can't read the dir")
 }
+
+type Entry struct {
+	Path string
+	FileMode
+	Content []byte
+	Info
+}
