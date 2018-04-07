@@ -30,8 +30,8 @@ import (
 var [[.UniqueName]] = [[.Content]]
 [[end]][[end]]
 
-// [[.VariableName]] returns content pod for brbundle FileSystem
-var [[.VariableName]] = brbundle.NewEmbeddedPod([[.Compression]], [[.Encryption]], [[.Dirs]], map[string]*brbundle.Entry{[[range .Files]]
+// [[.ConstantName]] returns content pod for brbundle FileSystem
+var [[.ConstantName]] = brbundle.MustEmbeddedPod([[.Decompressor]], [[.Deencryptor]], [[.Dirs]], map[string]*brbundle.Entry{[[range .Files]]
 "[[.Path]]": &brbundle.Entry{
     Path: "[[.Path]]",
     FileMode: [[.FileMode]],
@@ -57,7 +57,7 @@ func (f File) Path() string {
 }
 
 func (f File) FileMode() string {
-	return fmt.Sprintf("%#of", f.info.Mode())
+	return fmt.Sprintf("%#o", f.info.Mode())
 }
 
 func (f File) OriginalSize() int64 {
@@ -69,7 +69,7 @@ func (f File) Mtime() string {
 }
 
 func (f File) Content() string {
-	return fmt.Sprintf("%#v", string(f.content))
+	return fmt.Sprintf("[]byte(%#v)", string(f.content))
 }
 
 type Context struct {
@@ -82,12 +82,12 @@ type Context struct {
 	lock         sync.Mutex
 }
 
-func (c Context) Compression() string {
-	return c.compression.VariableName()
+func (c Context) Decompressor() string {
+	return c.compression.FunctionName()
 }
 
-func (c Context) Encryption() string {
-	return c.encryption.VariableName()
+func (c Context) Deencryptor() string {
+	return c.encryption.FunctionName()
 }
 
 func (c Context) Dirs() string {
