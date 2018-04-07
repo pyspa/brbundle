@@ -39,7 +39,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 	wait <- struct{}{}
 }
 
-func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey []byte, zipFile *os.File, srcDirPath string) {
+func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, zipFile *os.File, srcDirPath string) {
 	writer := zip.NewWriter(zipFile)
 	var lock sync.Mutex
 
@@ -49,7 +49,7 @@ func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ek
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go zipWorker(NewCompressor(ctype), NewEncryptor(etype, ekey), srcDirPath, writer, &lock, paths, wait)
+		go zipWorker(NewCompressor(ctype), NewEncryptor(etype, ekey, nonce), srcDirPath, writer, &lock, paths, wait)
 	}
 
 	close(paths)

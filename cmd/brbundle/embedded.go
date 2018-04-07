@@ -30,8 +30,8 @@ import (
 var [[.UniqueName]] = [[.Content]]
 [[end]][[end]]
 
-// [[.ConstantName]] returns content pod for brbundle FileSystem
-var [[.ConstantName]] = brbundle.MustEmbeddedPod([[.Decompressor]], [[.Deencryptor]], [[.Dirs]], map[string]*brbundle.Entry{[[range .Files]]
+// [[.VariableName]] returns content pod for brbundle FileSystem
+var [[.VariableName]] = brbundle.MustEmbeddedPod([[.Decompressor]], [[.Deencryptor]], [[.Dirs]], map[string]*brbundle.Entry{[[range .Files]]
 "[[.Path]]": &brbundle.Entry{
     Path: "[[.Path]]",
     FileMode: [[.FileMode]],
@@ -180,7 +180,7 @@ func embeddedWorker(compressor *Compressor, encryptor *Encryptor, context *Conte
 	wait <- struct{}{}
 }
 
-func embedded(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey []byte, packageName, variableName string, destFile *os.File, srcDirPath string) {
+func embedded(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, packageName, variableName string, destFile *os.File, srcDirPath string) {
 	color.Cyan("Embedded File Mode (Compression: %s, Encyrption: %s)\n\n", ctype, etype)
 
 	paths, dirs, ignored := Traverse(srcDirPath)
@@ -202,7 +202,7 @@ func embedded(ctype brbundle.CompressionType, etype brbundle.EncryptionType, eke
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go embeddedWorker(NewCompressor(ctype), NewEncryptor(etype, ekey), context, srcDirPath, paths, wait)
+		go embeddedWorker(NewCompressor(ctype), NewEncryptor(etype, ekey, nonce), context, srcDirPath, paths, wait)
 	}
 
 	close(paths)
@@ -218,11 +218,14 @@ func embedded(ctype brbundle.CompressionType, etype brbundle.EncryptionType, eke
 	color.HiGreen("Writing %s\n", destFile.Name())
 	t := template.Must(template.New("embedded").Delims("[[", "]]").Parse(embeddedSourceTemplate))
 	var source bytes.Buffer
-	t.Execute(&source, *context)
+	err := t.Execute(&source, *context)
+	if err != nil {
+		panic(err)
+	}
 	formattedSource, err := format.Source(source.Bytes())
 	if err != nil {
-		fmt.Println(err.Error())
 		destFile.Write(source.Bytes())
+		panic(err)
 	} else {
 		destFile.Write(formattedSource)
 	}

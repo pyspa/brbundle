@@ -110,8 +110,11 @@ func (e *EmbeddedPod) Open(name string) (http.File, error) {
 
 func NewEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) (FilePod, error) {
 	return func(key ...[]byte) (FilePod, error) {
-		if decryptor.NeedKey() && len(key) < 1 {
-			return nil, fmt.Errorf("Key to decrypto is needed")
+		if decryptor.NeedKey() {
+			if len(key) < 1 {
+				return nil, fmt.Errorf("Key to decrypto is needed")
+			}
+			decryptor.SetKey(key[0])
 		}
 		pod := &EmbeddedPod{
 			decompressor: decompressor,
@@ -128,8 +131,11 @@ func NewEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[str
 
 func MustEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) FilePod {
 	return func(key ...[]byte) FilePod {
-		if decryptor.NeedKey() && len(key) < 1 {
-			panic(fmt.Errorf("Key to decrypto is needed"))
+		if decryptor.NeedKey() {
+			if len(key) < 1 {
+				panic(fmt.Errorf("Key to decrypto is needed"))
+			}
+			decryptor.SetKey(key[0])
 		}
 		pod := &EmbeddedPod{
 			decompressor: decompressor,

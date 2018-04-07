@@ -33,7 +33,7 @@ func copyWorker(compressor *Compressor, encryptor *Encryptor, destPath, srcDirPa
 	wait <- struct{}{}
 }
 
-func createContentFolder(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey []byte, destPath, srcDirPath string) {
+func createContentFolder(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, destPath, srcDirPath string) {
 	color.Cyan("Content Folder Mode (Compression: %s, Encyrption: %s)\n\n", ctype, etype)
 
 	os.MkdirAll(destPath, 0755)
@@ -45,7 +45,7 @@ func createContentFolder(ctype brbundle.CompressionType, etype brbundle.Encrypti
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go copyWorker(NewCompressor(ctype), NewEncryptor(etype, ekey), destPath, srcDirPath, paths, wait)
+		go copyWorker(NewCompressor(ctype), NewEncryptor(etype, ekey, nonce), destPath, srcDirPath, paths, wait)
 	}
 
 	close(paths)

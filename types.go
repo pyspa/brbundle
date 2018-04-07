@@ -40,11 +40,11 @@ func (c CompressionType) ConstantName() string {
 func (c CompressionType) FunctionName() string {
 	switch c {
 	case Brotli:
-		return "BrotliDecompressor()"
+		return "brbundle.BrotliDecompressor()"
 	case LZ4:
-		return "LZ4Decompressor()"
+		return "brbundle.LZ4Decompressor()"
 	case NoCompression:
-		return "NullDecompressor()"
+		return "brbundle.NullDecompressor()"
 	}
 	return ""
 }
@@ -76,11 +76,11 @@ func (e EncryptionType) ConstantName() string {
 func (e EncryptionType) FunctionName() string {
 	switch e {
 	case AES:
-		return "AESOpener()"
+		return "brbundle.AESDecryptor()"
 	case ChaCha20Poly1305:
-		return "ChaChaOpener()"
+		return "brbundle.ChaChaDecryptor()"
 	case NoEncryption:
-		return "NullOpener()"
+		return "brbundle.NullDecryptor()"
 	}
 	return ""
 }

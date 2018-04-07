@@ -8,6 +8,7 @@ go build
 popd
 
 KEY=12345678123456781234567812345678
+export NONCE=STATIC_NONCE_FOR_TEST
 
 ./cmd/brbundle/brbundle --help
 
@@ -18,7 +19,7 @@ rm -rf testdata/*chacha
 rm -rf testdata/*.zip
 
 # content-folder
-#./cmd/brbundle/brbundle -z raw content                     testdata/raw-nocrypto testdata/raw-nocrypto
+#./cmd/brbundle/brbundle -z raw content                                                      testdata/raw-nocrypto testdata/raw-nocrypto
 ./cmd/brbundle/brbundle         content                     testdata/br-nocrypto  testdata/raw-nocrypto
 ./cmd/brbundle/brbundle -z lz4  content                     testdata/lz4-nocrypto testdata/raw-nocrypto
 ./cmd/brbundle/brbundle -z raw  content -c AES -k ${KEY}    testdata/raw-aes      testdata/raw-nocrypto

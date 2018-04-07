@@ -15,6 +15,7 @@ type Encryptor struct {
 	etype  brbundle.EncryptionType
 	aead   cipher.AEAD
 	key    []byte
+	nonce  []byte
 	reader *io.PipeReader
 	writer *io.PipeWriter
 	size   int
@@ -22,11 +23,12 @@ type Encryptor struct {
 	processingPath string
 }
 
-func NewEncryptor(etype brbundle.EncryptionType, key []byte) *Encryptor {
+func NewEncryptor(etype brbundle.EncryptionType, key, nonce []byte) *Encryptor {
 	e := &Encryptor{
 		etype,
 		nil,
 		key,
+		nonce,
 		nil,
 		nil,
 		0,
@@ -86,10 +88,15 @@ func (e *Encryptor) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return 0, err
 		}
-		nonce := make([]byte, e.aead.NonceSize())
-		_, err = rand.Read(nonce)
-		if err != nil {
-			panic("nonce generation error")
+		var nonce []byte
+		if len(e.nonce) == 0 {
+			nonce = make([]byte, e.aead.NonceSize())
+			_, err = rand.Read(nonce)
+			if err != nil {
+				panic("nonce generation error")
+			}
+		} else {
+			nonce = e.nonce
 		}
 		_, err = w.Write(nonce)
 		if err != nil {

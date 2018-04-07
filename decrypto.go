@@ -21,6 +21,9 @@ type aesDecryptor struct {
 }
 
 func (a aesDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
+	if a.aead == nil {
+		return nil, errors.New("Encryption Key is not set. Call SetKey() or set it via 1st param of Pod")
+	}
 	nonce := make([]byte, a.aead.NonceSize())
 	io.ReadFull(input, nonce)
 	cipherData, err := ioutil.ReadAll(input)

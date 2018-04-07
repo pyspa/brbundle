@@ -41,6 +41,9 @@ func main() {
 	kingpin.Version("0.0.1")
 	parse := kingpin.MustParse(app.Parse(os.Args[1:]))
 
+	// warning! it is for test only
+	nonce, _ := os.LookupEnv("STATIC_NONCE_FOR_TEST")
+
 	if *cryptoKey == "" && *cryptoType != "" {
 		app.Fatalf("Compressor '%s' is specified, but crypto-key is missing", *compressorType)
 	}
@@ -78,12 +81,12 @@ func main() {
 	color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 	switch parse {
 	case appendCommand.FullCommand():
-		appendToExec(ctype, etype, []byte(*cryptoKey), *appendTargetExec, *appendSourceDir)
+		appendToExec(ctype, etype, []byte(*cryptoKey), []byte(nonce), *appendTargetExec, *appendSourceDir)
 	case zipBundleCommand.FullCommand():
-		zipBundle(ctype, etype, []byte(*cryptoKey), *zipOutputFile, *zipSourceDir)
+		zipBundle(ctype, etype, []byte(*cryptoKey), []byte(nonce), *zipOutputFile, *zipSourceDir)
 	case contentFolderCommand.FullCommand():
-		createContentFolder(ctype, etype, []byte(*cryptoKey), *contentFolderDestDir, *contentFolderSourceDir)
+		createContentFolder(ctype, etype, []byte(*cryptoKey), []byte(nonce), *contentFolderDestDir, *contentFolderSourceDir)
 	case embeddedCommand.FullCommand():
-		embedded(ctype, etype, []byte(*cryptoKey), *packageName, *variableName, *outputFileName, *embeddedSourceDir)
+		embedded(ctype, etype, []byte(*cryptoKey), []byte(nonce), *packageName, *variableName, *outputFileName, *embeddedSourceDir)
 	}
 }
