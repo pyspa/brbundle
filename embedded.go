@@ -2,9 +2,7 @@ package brbundle
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path"
 	"time"
@@ -26,7 +24,7 @@ type embeddedFileEntry struct {
 	decryptor     Decryptor
 }
 
-func (e embeddedFileEntry) RawReader() (io.Reader, error) {
+func (e embeddedFileEntry) Reader() (io.Reader, error) {
 	decryptoReader, err :=  e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
 	if err != nil {
 		return nil, err
@@ -45,34 +43,38 @@ func (e embeddedFileEntry) BrotliReader() (io.Reader, error) {
 	return nil, errors.New("Source data is not compressed by brotli")
 }
 
-func (e *embeddedFileEntry) Stat() os.FileInfo {
+func (e embeddedFileEntry) Stat() os.FileInfo {
 	return &embeddedFileInfo{e.entry}
 }
 
-func (e *embeddedFileEntry) Name() string {
+func (e embeddedFileEntry) Name() string {
 	return path.Base(e.entry.Path)
+}
+
+func (e embeddedFileEntry) Path() string {
+	return e.entry.Path
 }
 
 type embeddedFileInfo struct {
 	entry *Entry
 }
 
-func (e *embeddedFileInfo) Name() string {
+func (e embeddedFileInfo) Name() string {
 	return path.Base(e.entry.Path)
 }
 
-func (e *embeddedFileInfo) Size() int64 {
+func (e embeddedFileInfo) Size() int64 {
 	return e.entry.OriginalSize
 }
 
-func (e *embeddedFileInfo) Mode() os.FileMode {
+func (e embeddedFileInfo) Mode() os.FileMode {
 	return os.FileMode(e.entry.FileMode)
 }
-func (e *embeddedFileInfo) ModTime() time.Time {
+func (e embeddedFileInfo) ModTime() time.Time {
 	return e.entry.Mtime
 }
 
-func (e *embeddedFileInfo) IsDir() bool {
+func (e embeddedFileInfo) IsDir() bool {
 	return false
 }
 
@@ -88,7 +90,7 @@ type EmbeddedPod struct {
 	encryptionKey []byte
 }
 
-func (e *EmbeddedPod) Find(path string) FileEntry {
+func (e EmbeddedPod) Find(path string) FileEntry {
 	entry, ok := e.files[path]
 	if ok {
 		return &embeddedFileEntry{
@@ -100,19 +102,28 @@ func (e *EmbeddedPod) Find(path string) FileEntry {
 	return nil
 }
 
-func (e *EmbeddedPod) Readdir(path string) []FileEntry {
-	return nil
+func (e EmbeddedPod) Readdir(path string) []FileEntry {
+	filePaths := e.dirs[path]
+	var result []FileEntry
+	for _, filePath := range filePaths {
+		entry := e.Find(filePath)
+		if entry != nil {
+			result = append(result, entry)
+		}
+	}
+	return result
 }
 
-func (e *EmbeddedPod) Open(name string) (http.File, error) {
-	return nil, nil
+func (e EmbeddedPod) Close() error {
+	// do nothing
+	return nil
 }
 
 func NewEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) (FilePod, error) {
 	return func(key ...[]byte) (FilePod, error) {
 		if decryptor.NeedKey() {
 			if len(key) < 1 {
-				return nil, fmt.Errorf("Key to decrypto is needed")
+				return nil, errors.New("Key to decrypto is needed")
 			}
 			decryptor.SetKey(key[0])
 		}
@@ -133,7 +144,7 @@ func MustEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[st
 	return func(key ...[]byte) FilePod {
 		if decryptor.NeedKey() {
 			if len(key) < 1 {
-				panic(fmt.Errorf("Key to decrypto is needed"))
+				panic(errors.New("Key to decrypto is needed"))
 			}
 			decryptor.SetKey(key[0])
 		}

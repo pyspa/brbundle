@@ -3,28 +3,22 @@ package brbundle
 import (
 	"os"
 	"io"
-	"net/http"
 	"fmt"
 	"sort"
 )
 
-type Pod interface {
-	Find(path string) FileEntry
-	Readdir(path string) []FileEntry
-
-	Open(name string) (http.File, error)
-}
-
 type FileEntry interface{
-	RawReader() (io.Reader, error)
+	Reader() (io.Reader, error)
 	BrotliReader() (io.Reader, error)
 	Stat() os.FileInfo
 	Name() string
+	Path() string
 }
 
 type FilePod interface {
 	Find(path string) FileEntry
 	Readdir(path string) []FileEntry
+	Close() error
 }
 
 type Bundle struct {
@@ -70,4 +64,22 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 		result[i] = foundFiles[fileName]
 	}
 	return result, nil
+}
+
+func (b *Bundle) Close(deletePod FilePod) error {
+	var pods []FilePod
+	if len(b.pods) > 1 {
+		pods = make([]FilePod, 0, len(b.pods) - 1)
+	}
+
+	var err error
+
+	for _, pod := range b.pods {
+		if pod != deletePod {
+			pods = append(pods, pod)
+		} else {
+			err = pod.Close()
+		}
+	}
+	return err
 }

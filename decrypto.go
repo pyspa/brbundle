@@ -14,6 +14,7 @@ type Decryptor interface {
 	Decrypto(input io.Reader) (io.Reader, error)
 	SetKey(key []byte) error
 	NeedKey() bool
+	HasKey() bool
 }
 
 type aesDecryptor struct {
@@ -55,8 +56,16 @@ func (a *aesDecryptor) SetKey(key []byte) error {
 	return nil
 }
 
-func AESDecryptor() Decryptor {
-	return &aesDecryptor{}
+func (a aesDecryptor) HasKey() bool {
+	return a.aead != nil
+}
+
+func AESDecryptor(key ...[]byte) Decryptor {
+	result := &aesDecryptor{}
+	if len(key) > 0 {
+		result.SetKey(key[0])
+	}
+	return result
 }
 
 type chaChaDecryptor struct {
@@ -90,8 +99,16 @@ func (c *chaChaDecryptor) SetKey(key []byte) error {
 	return nil
 }
 
-func ChaChaDecryptor() Decryptor {
-	return &chaChaDecryptor{}
+func (c chaChaDecryptor) HasKey() bool {
+	return c.aead != nil
+}
+
+func ChaChaDecryptor(key ...[]byte) Decryptor {
+	result := &chaChaDecryptor{}
+	if len(key) > 0 {
+		result.SetKey(key[0])
+	}
+	return result
 }
 
 type nullDecryptor struct {}
@@ -106,6 +123,10 @@ func (n *nullDecryptor) SetKey(key []byte) error {
 
 func (n nullDecryptor) NeedKey() bool {
 	return false
+}
+
+func (n nullDecryptor) HasKey() bool {
+	return true
 }
 
 func NullDecryptor() Decryptor {
