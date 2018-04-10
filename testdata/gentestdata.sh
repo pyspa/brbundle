@@ -19,15 +19,16 @@ rm -rf testdata/*chacha
 rm -rf testdata/*.zip
 
 # content-folder
-#./cmd/brbundle/brbundle -z raw content                                                      testdata/raw-nocrypto testdata/raw-nocrypto
-./cmd/brbundle/brbundle         content                     testdata/br-nocrypto  testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4  content                     testdata/lz4-nocrypto testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z raw  content -c AES -k ${KEY}    testdata/raw-aes      testdata/raw-nocrypto
-./cmd/brbundle/brbundle         content -c AES -k ${KEY}    testdata/br-aes       testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4  content -c AES -k ${KEY}    testdata/lz4-aes      testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z raw  content -c chacha -k ${KEY} testdata/raw-chacha   testdata/raw-nocrypto
-./cmd/brbundle/brbundle         content -c chacha -k ${KEY} testdata/br-chacha    testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4  content -c chacha -k ${KEY} testdata/lz4-chacha   testdata/raw-nocrypto
+#./cmd/brbundle/brbundle content                     testdata/raw-nocrypto testdata/raw-nocrypto
+./cmd/brbundle/brbundle  content -c AES -k ${KEY}    testdata/raw-aes      testdata/raw-nocrypto
+./cmd/brbundle/brbundle  content -c chacha -k ${KEY} testdata/raw-chacha   testdata/raw-nocrypto
+
+mkdir testdata/br-nocrypto
+mkdir testdata/lz4-nocrypto
+mkdir testdata/br-aes
+mkdir testdata/lz4-aes
+mkdir testdata/br-chacha
+mkdir testdata/lz4-chacha
 
 # embedded
 ./cmd/brbundle/brbundle -z raw embedded                     -p rawnoenc  -o testdata/raw-nocrypto/embedded.go testdata/raw-nocrypto
@@ -41,13 +42,17 @@ rm -rf testdata/*.zip
 ./cmd/brbundle/brbundle -z lz4 embedded -c chacha -k ${KEY} -p lz4chacha -o testdata/lz4-chacha/embedded.go   testdata/raw-nocrypto
 
 #zip
-./cmd/brbundle/brbundle -z raw zip-bundle                     testdata/raw-nocrypto.zip testdata/raw-nocrypto
-./cmd/brbundle/brbundle        zip-bundle                     testdata/br-nocrypto.zip  testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4 zip-bundle                     testdata/lz4-nocrypto.zip testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z raw zip-bundle -c AES -k ${KEY}    testdata/raw-aes.zip      testdata/raw-nocrypto
-./cmd/brbundle/brbundle        zip-bundle -c AES -k ${KEY}    testdata/br-aes.zip       testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4 zip-bundle -c AES -k ${KEY}    testdata/lz4-aes.zip      testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z raw zip-bundle -c chacha -k ${KEY} testdata/raw-chacha.zip   testdata/raw-nocrypto
-./cmd/brbundle/brbundle        zip-bundle -c chacha -k ${KEY} testdata/br-chacha.zip    testdata/raw-nocrypto
-./cmd/brbundle/brbundle -z lz4 zip-bundle -c chacha -k ${KEY} testdata/lz4-chacha.zip   testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z raw zip                     testdata/raw-nocrypto.zip testdata/raw-nocrypto
+./cmd/brbundle/brbundle        zip                     testdata/br-nocrypto.zip  testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z lz4 zip                     testdata/lz4-nocrypto.zip testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z raw zip -c AES -k ${KEY}    testdata/raw-aes.zip      testdata/raw-nocrypto
+./cmd/brbundle/brbundle        zip -c AES -k ${KEY}    testdata/br-aes.zip       testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z lz4 zip -c AES -k ${KEY}    testdata/lz4-aes.zip      testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z raw zip -c chacha -k ${KEY} testdata/raw-chacha.zip   testdata/raw-nocrypto
+./cmd/brbundle/brbundle        zip -c chacha -k ${KEY} testdata/br-chacha.zip    testdata/raw-nocrypto
+./cmd/brbundle/brbundle -z lz4 zip -c chacha -k ${KEY} testdata/lz4-chacha.zip   testdata/raw-nocrypto
 
+#bundle
+./cmd/brbundle/brbundle bundle testdata/testexe/testexe.exe    testdata/raw-nocrypto
+./cmd/brbundle/brbundle bundle testdata/testexe/testexe.linux  testdata/raw-nocrypto
+./cmd/brbundle/brbundle bundle testdata/testexe/testexe.darwin testdata/raw-nocrypto

@@ -18,13 +18,13 @@ var (
 
 	compressorType = app.Flag("compressor", "Compressor type").Short('z').Default("br").Enum("br", "lz4", "raw")
 
-	appendCommand    = app.Command("append", "Append static files to an execution file")
-	appendTargetExec = appendCommand.Arg("exec", "Target execution file path").Required().ExistingFile()
-	appendSourceDir  = appendCommand.Arg("src", "Directory that contains static files").Required().ExistingDir()
+	bundleCommand    = app.Command("bundle", "Append static files to an execution file")
+	bundleTargetExec = bundleCommand.Arg("exec", "Target execution file path").Required().ExistingFile()
+	bundleSourceDir  = bundleCommand.Arg("src", "Directory that contains static files").Required().ExistingDir()
 
-	zipBundleCommand = app.Command("zip-bundle", "Make single zip file")
-	zipOutputFile    = zipBundleCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY, 0644)
-	zipSourceDir     = zipBundleCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
+	zipCommand    = app.Command("zip", "Make single zip file")
+	zipOutputFile = zipCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY, 0644)
+	zipSourceDir  = zipCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 
 	contentFolderCommand   = app.Command("content", "Just compress and/or encryption folder")
 	contentFolderDestDir   = contentFolderCommand.Arg("dest-dir", "Destination folder (folder content are removed if exists)").Required().String()
@@ -32,7 +32,7 @@ var (
 
 	embeddedCommand   = app.Command("embedded", "Generate Golang code that contains")
 	packageName       = embeddedCommand.Flag("package", "Package name").Short('p').Default("main").String()
-	variableName       = embeddedCommand.Flag("variable", "Variable name").Short('v').Default("Pod").String()
+	variableName      = embeddedCommand.Flag("variable", "Variable name").Short('v').Default("Pod").String()
 	outputFileName    = embeddedCommand.Flag("output", "Output file name").Short('o').Default("embedded-bundle.go").OpenFile(os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	embeddedSourceDir = embeddedCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 )
@@ -52,19 +52,21 @@ func main() {
 		app.Fatalf("crypto-key should be 32byte string, but %d", len(*cryptoKey))
 	}
 
-	var ctype brbundle.CompressionType
+	ctype := brbundle.NoCompression
 
-	switch *compressorType {
-	case "br":
-		ctype = brbundle.Brotli
-		if !HasBrotli() {
-			color.Red("Can't run brotli on this environtent")
-			os.Exit(1)
+	if contentFolderCommand.FullCommand() == "" {
+		switch *compressorType {
+		case "br":
+			ctype = brbundle.Brotli
+			if !HasBrotli() {
+				color.Red("Can't run brotli on this environtent")
+				os.Exit(1)
+			}
+		case "lz4":
+			ctype = brbundle.LZ4
+		default:
+			ctype = brbundle.NoCompression
 		}
-	case "lz4":
-		ctype = brbundle.LZ4
-	default:
-		ctype = brbundle.NoCompression
 	}
 
 	var etype brbundle.EncryptionType
@@ -80,12 +82,12 @@ func main() {
 
 	color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 	switch parse {
-	case appendCommand.FullCommand():
-		appendToExec(ctype, etype, []byte(*cryptoKey), []byte(nonce), *appendTargetExec, *appendSourceDir)
-	case zipBundleCommand.FullCommand():
-		zipBundle(ctype, etype, []byte(*cryptoKey), []byte(nonce), *zipOutputFile, *zipSourceDir)
+	case bundleCommand.FullCommand():
+		appendToExec(ctype, etype, []byte(*cryptoKey), []byte(nonce), *bundleTargetExec, *bundleSourceDir)
+	case zipCommand.FullCommand():
+		zipBundle(ctype, etype, []byte(*cryptoKey), []byte(nonce), *zipOutputFile, *zipSourceDir, "Zip")
 	case contentFolderCommand.FullCommand():
-		createContentFolder(ctype, etype, []byte(*cryptoKey), []byte(nonce), *contentFolderDestDir, *contentFolderSourceDir)
+		createContentFolder(etype, []byte(*cryptoKey), []byte(nonce), *contentFolderDestDir, *contentFolderSourceDir)
 	case embeddedCommand.FullCommand():
 		embedded(ctype, etype, []byte(*cryptoKey), []byte(nonce), *packageName, *variableName, *outputFileName, *embeddedSourceDir)
 	}

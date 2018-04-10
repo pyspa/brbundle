@@ -10,7 +10,8 @@ import (
 	"github.com/shibukawa/brbundle"
 )
 
-func copyWorker(compressor *Compressor, encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan Entry, wait chan<- struct{}) {
+func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan Entry, wait chan<- struct{}) {
+	compressor := NewCompressor(brbundle.NoCompression)
 	for entry := range jobs {
 		outputPath := filepath.Join(destPath, entry.Path)
 		output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, entry.Info.Mode())
@@ -33,8 +34,8 @@ func copyWorker(compressor *Compressor, encryptor *Encryptor, destPath, srcDirPa
 	wait <- struct{}{}
 }
 
-func createContentFolder(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, destPath, srcDirPath string) {
-	color.Cyan("Content Folder Mode (Compression: %s, Encyrption: %s)\n\n", ctype, etype)
+func createContentFolder(etype brbundle.EncryptionType, ekey, nonce []byte, destPath, srcDirPath string) {
+	color.Cyan("Content Folder Mode (Encyrption: %s)\n\n", etype)
 
 	os.MkdirAll(destPath, 0755)
 	paths, dirs, ignored := Traverse(srcDirPath)
@@ -45,7 +46,7 @@ func createContentFolder(ctype brbundle.CompressionType, etype brbundle.Encrypti
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go copyWorker(NewCompressor(ctype), NewEncryptor(etype, ekey, nonce), destPath, srcDirPath, paths, wait)
+		go copyWorker(NewEncryptor(etype, ekey, nonce), destPath, srcDirPath, paths, wait)
 	}
 
 	close(paths)

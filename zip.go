@@ -5,18 +5,18 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
-	"path"
 )
 
 type ZipPod struct {
-	decompressor  Decompressor
-	decryptor     Decryptor
-	dirs          map[string][]string
-	files         map[string]*zip.File
-	onClose         func() error
+	decompressor Decompressor
+	decryptor    Decryptor
+	dirs         map[string][]string
+	files        map[string]*zip.File
+	onClose      func() error
 }
 
 func (z ZipPod) Find(path string) FileEntry {
@@ -131,7 +131,7 @@ func NewZipPod(decompressor Decompressor, decryptor Decryptor, zipFilePath strin
 	}
 	pod, err := NewZipPodFromReader(decompressor, decryptor, file, info.Size())
 	if err != nil {
-		pod.(*ZipPod).OnClose(func () error {
+		pod.(*ZipPod).OnClose(func() error {
 			return file.Close()
 		})
 	}
@@ -157,7 +157,7 @@ func NewZipPodFromReader(decompressor Decompressor, decryptor Decryptor, fileRea
 	dirs := make(map[string][]string)
 	files := make(map[string]*zip.File)
 	for _, file := range reader.File {
-		files["/" + file.Name] = file
+		files["/"+file.Name] = file
 	}
 	pod := &ZipPod{
 		decompressor: decompressor,
@@ -170,6 +170,32 @@ func NewZipPodFromReader(decompressor Decompressor, decryptor Decryptor, fileRea
 
 func MustZipPodFromReader(decompressor Decompressor, decryptor Decryptor, reader io.ReaderAt, size int64) FilePod {
 	pod, err := NewZipPodFromReader(decompressor, decryptor, reader, size)
+	if err != nil {
+		panic(err)
+	}
+	return pod
+}
+
+func NewZipPodFromZipReader(decompressor Decompressor, decryptor Decryptor, reader *zip.Reader) (FilePod, error) {
+	if decryptor.NeedKey() && !decryptor.HasKey() {
+		return nil, errors.New("Key to decrypto is needed")
+	}
+	dirs := make(map[string][]string)
+	files := make(map[string]*zip.File)
+	for _, file := range reader.File {
+		files["/"+file.Name] = file
+	}
+	pod := &ZipPod{
+		decompressor: decompressor,
+		decryptor:    decryptor,
+		dirs:         dirs,
+		files:        files,
+	}
+	return pod, nil
+}
+
+func MustZipPodFromZipReader(decompressor Decompressor, decryptor Decryptor, reader *zip.Reader) FilePod {
+	pod, err := NewZipPodFromZipReader(decompressor, decryptor, reader)
 	if err != nil {
 		panic(err)
 	}

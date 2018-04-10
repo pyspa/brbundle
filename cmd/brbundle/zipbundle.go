@@ -39,11 +39,11 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 	wait <- struct{}{}
 }
 
-func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, zipFile *os.File, srcDirPath string) {
+func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, zipFile *os.File, srcDirPath, mode string) {
 	writer := zip.NewWriter(zipFile)
 	var lock sync.Mutex
 
-	color.Cyan("Zip Mode (Compression: %s, Encyrption: %s)\n\n", ctype, etype)
+	color.Cyan("%s Mode (Compression: %s, Encyrption: %s)\n\n", mode, ctype, etype)
 
 	paths, _, ignored := Traverse(srcDirPath)
 

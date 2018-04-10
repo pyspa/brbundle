@@ -29,6 +29,10 @@ func NewBundle(pods ...FilePod) *Bundle {
 	return &Bundle{pods}
 }
 
+func (b *Bundle) AddPod(pod FilePod) {
+	b.pods = append(b.pods, pod)
+}
+
 func (b Bundle) Find(path string) (FileEntry, error) {
 	for _, pod := range b.pods {
 		entry := pod.Find(path)
