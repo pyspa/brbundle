@@ -54,7 +54,7 @@ func main() {
 
 	ctype := brbundle.NoCompression
 
-	if contentFolderCommand.FullCommand() == "" {
+	if parse != "content" {
 		switch *compressorType {
 		case "br":
 			ctype = brbundle.Brotli
