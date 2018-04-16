@@ -2,11 +2,11 @@ package brbundle
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"path"
 	"time"
-	"errors"
 )
 
 type Entry struct {
@@ -19,13 +19,13 @@ type Entry struct {
 }
 
 type embeddedFileEntry struct {
-	entry *Entry
-	decompressor  Decompressor
-	decryptor     Decryptor
+	entry        *Entry
+	decompressor Decompressor
+	decryptor    Decryptor
 }
 
 func (e embeddedFileEntry) Reader() (io.ReadCloser, error) {
-	decryptoReader, err :=  e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
+	decryptoReader, err := e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (e embeddedFileEntry) Reader() (io.ReadCloser, error) {
 
 func (e embeddedFileEntry) BrotliReader() (io.ReadCloser, error) {
 	if _, ok := e.decompressor.(*brotliDecompressor); ok {
-		decryptoReader, err :=  e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
+		decryptoReader, err := e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
 		if err != nil {
 			return nil, err
 		}
@@ -94,9 +94,9 @@ func (e EmbeddedPod) Find(path string) FileEntry {
 	entry, ok := e.files[path]
 	if ok {
 		return &embeddedFileEntry{
-			entry: entry,
+			entry:        entry,
 			decompressor: e.decompressor,
-			decryptor: e.decryptor,
+			decryptor:    e.decryptor,
 		}
 	}
 	return nil
@@ -150,9 +150,9 @@ func MustEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[st
 		}
 		pod := &EmbeddedPod{
 			decompressor: decompressor,
-			decryptor:  decryptor,
-			dirs:            dirs,
-			files:           files,
+			decryptor:    decryptor,
+			dirs:         dirs,
+			files:        files,
 		}
 		if len(key) > 0 {
 			pod.encryptionKey = key[0]

@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func TestExecutionPod_Windows_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
 	entry, err := bundle.Find("/rootfile.txt")

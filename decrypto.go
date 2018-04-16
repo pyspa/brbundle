@@ -1,13 +1,13 @@
 package brbundle
 
 import (
-	"io"
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"bytes"
-	"io/ioutil"
-	"golang.org/x/crypto/chacha20poly1305"
 	"errors"
+	"golang.org/x/crypto/chacha20poly1305"
+	"io"
+	"io/ioutil"
 )
 
 type Decryptor interface {
@@ -111,7 +111,7 @@ func ChaChaDecryptor(key ...[]byte) Decryptor {
 	return result
 }
 
-type nullDecryptor struct {}
+type nullDecryptor struct{}
 
 func (n nullDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
 	return input, nil

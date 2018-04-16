@@ -1,11 +1,11 @@
 package brbundle_test
 
 import (
-	"testing"
 	"github.com/ToQoz/gopwt/assert"
 	"github.com/shibukawa/brbundle"
-	"time"
 	"io/ioutil"
+	"testing"
+	"time"
 )
 
 var _Podaf286c585c49f12fc5e22571545e8442015475d2 = []byte("hello world from root\n")
@@ -43,7 +43,6 @@ var RawNoEncPod = brbundle.MustEmbeddedPod(brbundle.NullDecompressor(), brbundle
 		ETag:         "1b-5abfe816",
 	},
 })
-
 
 func TestEmbeddedRawNoCrypto_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(RawNoEncPod())
@@ -106,10 +105,7 @@ var BrotliAESPod = brbundle.MustEmbeddedPod(brbundle.BrotliDecompressor(), brbun
 		Data:         _Podc9651f1639016275cc07ae093dea6ac9f08a835d,
 		ETag:         "1b-5abfe816",
 	},
-
 })
-
-
 
 func TestEmbeddedBrotliAES_RootFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")

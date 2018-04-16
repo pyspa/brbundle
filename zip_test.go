@@ -49,7 +49,7 @@ func TestZipBrotliAES_RootFile(t *testing.T) {
 
 func TestZipBrotliAES_SubDirFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey),"./testdata/br-aes.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey), "./testdata/br-aes.zip"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.OK(t, err == nil)
 	assert.OK(t, entry.Name() == "file-in-subfolder.txt")

@@ -1,9 +1,9 @@
 package brbundle
 
 import (
-	"os"
-	"io"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 )
 
@@ -30,7 +30,7 @@ func NewReadCloser(reader io.Reader, closer io.Closer) io.ReadCloser {
 	}
 }
 
-type FileEntry interface{
+type FileEntry interface {
 	Reader() (io.ReadCloser, error)
 	BrotliReader() (io.ReadCloser, error)
 	Stat() os.FileInfo
@@ -76,7 +76,7 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 			found = true
 			for _, entry := range entries {
 				if foundFiles[entry.Name()] == nil {
-					foundFiles[entry.Name()] = entry;
+					foundFiles[entry.Name()] = entry
 					fileNames = append(fileNames, entry.Name())
 				}
 			}
@@ -96,7 +96,7 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 func (b *Bundle) Close(deletePod FilePod) error {
 	var pods []FilePod
 	if len(b.pods) > 1 {
-		pods = make([]FilePod, 0, len(b.pods) - 1)
+		pods = make([]FilePod, 0, len(b.pods)-1)
 	}
 
 	var err error

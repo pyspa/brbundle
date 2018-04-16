@@ -1,15 +1,13 @@
 package brbundle
 
 import (
+	"io"
 	"net/http"
 	"strings"
-	"io"
-
-	"github.com/golang/gddo/httputil"
 )
 
 type FileSystem struct {
-	path string
+	path   string
 	bundle *Bundle
 }
 
@@ -30,7 +28,7 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if httputil.NegotiateContentEncoding(r, []string{"br"}) == "br" {
+	if supportBrotli(r.Header.Get("Accept-Encoding")) {
 		reader, err := file.BrotliReader()
 		w.Header().Set("Content-Encoding", "br")
 		defer reader.Close()
@@ -50,10 +48,9 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-func MountBundle(path string, bundle *Bundle) *FileSystem {
+func ServerMount(path string, bundle *Bundle) *FileSystem {
 	return &FileSystem{
-		path: path,
+		path:   path,
 		bundle: bundle,
 	}
 }

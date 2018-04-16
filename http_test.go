@@ -2,20 +2,19 @@ package brbundle_test
 
 import (
 	"io/ioutil"
-	"testing"
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/ToQoz/gopwt/assert"
-	"github.com/shibukawa/brbundle"
 	"github.com/dsnet/compress/brotli"
+	"github.com/shibukawa/brbundle"
 )
-
 
 func TestNewFileSystem_NoBrotli(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 
-	s := httptest.NewServer(brbundle.MountBundle("/static", bundle))
+	s := httptest.NewServer(brbundle.ServerMount("/static", bundle))
 	defer s.Close()
 
 	res, err := http.Get(s.URL + "/static/rootfile.txt")
@@ -31,10 +30,10 @@ func TestNewFileSystem_NoBrotli(t *testing.T) {
 func TestNewFileSystem_Brotli(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 
-	s := httptest.NewServer(brbundle.MountBundle("/static", bundle))
+	s := httptest.NewServer(brbundle.ServerMount("/static", bundle))
 	defer s.Close()
 
-	request, err := http.NewRequest("GET", s.URL + "/static/rootfile.txt", nil)
+	request, err := http.NewRequest("GET", s.URL+"/static/rootfile.txt", nil)
 	assert.OK(t, err == nil)
 	request.Header.Add("Accept-Encoding", "br")
 	res, err := http.DefaultClient.Do(request)
