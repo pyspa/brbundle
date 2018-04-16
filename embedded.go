@@ -24,21 +24,21 @@ type embeddedFileEntry struct {
 	decryptor     Decryptor
 }
 
-func (e embeddedFileEntry) Reader() (io.Reader, error) {
+func (e embeddedFileEntry) Reader() (io.ReadCloser, error) {
 	decryptoReader, err :=  e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
 	if err != nil {
 		return nil, err
 	}
-	return e.decompressor.Decompress(decryptoReader), nil
+	return NewReadCloser(e.decompressor.Decompress(decryptoReader), nil), nil
 }
 
-func (e embeddedFileEntry) BrotliReader() (io.Reader, error) {
+func (e embeddedFileEntry) BrotliReader() (io.ReadCloser, error) {
 	if _, ok := e.decompressor.(*brotliDecompressor); ok {
 		decryptoReader, err :=  e.decryptor.Decrypto(bytes.NewReader(e.entry.Data))
 		if err != nil {
 			return nil, err
 		}
-		return decryptoReader, nil
+		return NewReadCloser(decryptoReader, nil), nil
 	}
 	return nil, errors.New("Source data is not compressed by brotli")
 }

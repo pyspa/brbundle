@@ -7,9 +7,32 @@ import (
 	"sort"
 )
 
+type ReadCloser struct {
+	reader io.Reader
+	closer io.Closer
+}
+
+func (rc ReadCloser) Read(buf []byte) (int, error) {
+	return rc.reader.Read(buf)
+}
+
+func (rc ReadCloser) Close() error {
+	if rc.closer == nil {
+		return nil
+	}
+	return rc.closer.Close()
+}
+
+func NewReadCloser(reader io.Reader, closer io.Closer) io.ReadCloser {
+	return &ReadCloser{
+		reader: reader,
+		closer: closer,
+	}
+}
+
 type FileEntry interface{
-	Reader() (io.Reader, error)
-	BrotliReader() (io.Reader, error)
+	Reader() (io.ReadCloser, error)
+	BrotliReader() (io.ReadCloser, error)
 	Stat() os.FileInfo
 	Name() string
 	Path() string

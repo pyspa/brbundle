@@ -52,7 +52,7 @@ type zipFileEntry struct {
 	decryptor    Decryptor
 }
 
-func (z zipFileEntry) Reader() (io.Reader, error) {
+func (z zipFileEntry) Reader() (io.ReadCloser, error) {
 	reader, err := z.entry.Open()
 	if err != nil {
 		return nil, err
@@ -61,10 +61,10 @@ func (z zipFileEntry) Reader() (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	return z.decompressor.Decompress(decryptoReader), nil
+	return NewReadCloser(z.decompressor.Decompress(decryptoReader), reader), nil
 }
 
-func (z zipFileEntry) BrotliReader() (io.Reader, error) {
+func (z zipFileEntry) BrotliReader() (io.ReadCloser, error) {
 	if _, ok := z.decompressor.(*brotliDecompressor); ok {
 		reader, err := z.entry.Open()
 		if err != nil {
@@ -74,7 +74,7 @@ func (z zipFileEntry) BrotliReader() (io.Reader, error) {
 		if err != nil {
 			return nil, err
 		}
-		return decryptoReader, nil
+		return NewReadCloser(decryptoReader, reader), nil
 	}
 	return nil, errors.New("Source data is not compressed by brotli")
 }

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 	"io"
+
+	"github.com/golang/gddo/httputil"
 )
 
 type FileSystem struct {
@@ -28,12 +30,24 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reader, err := file.Reader()
-	if err != nil {
-		w.WriteHeader(500)
-		return
+	if httputil.NegotiateContentEncoding(r, []string{"br"}) == "br" {
+		reader, err := file.BrotliReader()
+		w.Header().Set("Content-Encoding", "br")
+		defer reader.Close()
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+		io.Copy(w, reader)
+	} else {
+		reader, err := file.Reader()
+		defer reader.Close()
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+		io.Copy(w, reader)
 	}
-	io.Copy(w, reader)
 }
 
 
