@@ -17,6 +17,16 @@ rm -rf testdata/lz4*
 rm -rf testdata/*aes
 rm -rf testdata/*chacha
 rm -rf testdata/*.zip
+rm testdata/testexe/testexe.darwin
+rm testdata/testexe/testexe.linux
+rm testdata/testexe/testexe.exe
+
+# gen test.exe
+pushd testdata/testexe
+GOOS=linux GOARCH=amd64 go build -o testexe.linux
+GOOS=darwin GOARCH=amd64 go build -o testexe.darwin
+GOOS=windows GOARCH=amd64 go build -o testexe.exe
+popd
 
 # content-folder
 #./cmd/brbundle/brbundle content                     testdata/raw-nocrypto testdata/raw-nocrypto

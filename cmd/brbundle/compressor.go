@@ -4,7 +4,7 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/pierrec/lz4"
+	//"github.com/pierrec/lz4"
 	"github.com/shibukawa/brbundle"
 )
 
@@ -54,8 +54,10 @@ func (c *Compressor) WriteTo(w io.Writer) (n int64, err error) {
 		brotli.Stdout = w
 		err = brotli.Run()
 	case brbundle.LZ4:
-		lz4w := lz4.NewWriter(w)
-		n, err = io.Copy(lz4w, c.reader)
+		brotli := exec.Command("lz4", "-9")
+		brotli.Stdin = c.reader
+		brotli.Stdout = w
+		err = brotli.Run()
 	}
 	return
 }

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ToQoz/gopwt/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/dsnet/compress/brotli"
 	"github.com/labstack/echo"
 	"github.com/shibukawa/brbundle"
@@ -23,10 +23,10 @@ func TestNewFileSystem_ForEcho_NoBrotli(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/static/rootfile.txt")
 
-	assert.OK(t, handler(c) == nil)
+	assert.Equal(t, nil, handler(c))
 
-	assert.OK(t, rec.Code == 200)
-	assert.OK(t, rec.Body.String() == "hello world from root\n")
+	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, "hello world from root\n", rec.Body.String())
 }
 
 func TestNewFileSystem_ForEcho_Brotli(t *testing.T) {
@@ -43,13 +43,13 @@ func TestNewFileSystem_ForEcho_Brotli(t *testing.T) {
 	c.SetPath("/static/rootfile.txt")
 	//c.Set("Accept-Encoding", "br")
 
-	assert.OK(t, handler(c) == nil)
-	assert.OK(t, rec.Header().Get("Content-Encoding") == "br")
-	assert.OK(t, rec.Code == 200)
+	assert.Equal(t, nil, handler(c))
+	assert.Equal(t, "br", rec.Header().Get("Content-Encoding"))
+	assert.Equal(t, 200, rec.Code)
 	reader, err := brotli.NewReader(rec.Body, nil)
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	body, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 
-	assert.OK(t, string(body) == "hello world from root\n")
+	assert.Equal(t, "hello world from root\n", string(body))
 }

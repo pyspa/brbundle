@@ -1,7 +1,7 @@
 package brbundle_test
 
 import (
-	"github.com/ToQoz/gopwt/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/shibukawa/brbundle"
 	"io/ioutil"
 	"testing"
@@ -10,77 +10,77 @@ import (
 func TestExecutionPod_Windows_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
-	assert.OK(t, entry.Path() == "/rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestExecutionPod_Windows_SubDirFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
-	assert.OK(t, entry.Path() == "/subfolder/file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
 func TestExecutionPod_Linux_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
-	assert.OK(t, entry.Path() == "/rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestExecutionPod_Linux_SubDirFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
-	assert.OK(t, entry.Path() == "/subfolder/file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
 func TestExecutionPod_Darwin_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
-	assert.OK(t, entry.Path() == "/rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestExecutionPod_Darwin_SubDirFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
-	assert.OK(t, entry.Path() == "/subfolder/file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }

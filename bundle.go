@@ -83,7 +83,7 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("Can't read the dir: %", path)
+		return nil, fmt.Errorf("Can't read the dir: %s", path)
 	}
 	sort.Strings(fileNames)
 	result := make([]FileEntry, len(fileNames))

@@ -1,7 +1,7 @@
 package brbundle_test
 
 import (
-	"github.com/ToQoz/gopwt/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/shibukawa/brbundle"
 	"io/ioutil"
 	"testing"
@@ -47,27 +47,27 @@ var RawNoEncPod = brbundle.MustEmbeddedPod(brbundle.NullDecompressor(), brbundle
 func TestEmbeddedRawNoCrypto_RootFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(RawNoEncPod())
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
-	assert.OK(t, entry.Path() == "/rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestEmbeddedRawNoCrypto_SubDirFile(t *testing.T) {
 	var bundle = brbundle.NewBundle(RawNoEncPod())
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
-	assert.OK(t, entry.Path() == "/subfolder/file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
 var _Podaecb14885bc3898acc068f03a1eacdd345ad14a5 = []byte("E\xbf\xd3P)>7\fj\x91\x19\xd1B\x94\x18\x99H\x12\xe2\bZ\x11~Z\xaf>\xf7ʺ\xb9ZZ\xf6\xc8\x1e\f\xf5\xa7\xb2\xf2b\xa3\x15\xe5͋\xfc")
@@ -111,26 +111,28 @@ func TestEmbeddedBrotliAES_RootFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
 	var bundle = brbundle.NewBundle(BrotliAESPod(encryptKey))
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestEmbeddedBrotliAES_SubDirFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
 	var bundle = brbundle.NewBundle(BrotliAESPod(encryptKey))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
 var _Poddc000bbfe676e07dc7c16856c5b7e0ec6629f6ba = []byte("\xbe\rj\xa7\x83\xe5-\x06\xf2\a\xb0*\x88u\xa3n{\xfb\xf7\xd8\x1000\u007f\xc7F\xeb\xf1\x8b-\xbb'M\xc8\xe6\x1d\x05\xce\xf4\xfc\xa8\u05ce3\xc61KbO<\xa9\xaf\xeb\xe1\x1d\xa4\x80\x04\u007f\xed\x06")
@@ -174,24 +176,26 @@ func TestEmbeddedLZ4ChaCha_RootFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
 	var bundle = brbundle.NewBundle(LZ4ChaChaPod(encryptKey))
 	entry, err := bundle.Find("/rootfile.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "rootfile.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "rootfile.txt", entry.Name())
+	assert.Equal(t, "/rootfile.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from root\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from root\n", string(content))
 }
 
 func TestEmbeddedLZ4ChaCha_SubDirFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
 	var bundle = brbundle.NewBundle(LZ4ChaChaPod(encryptKey))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
-	assert.OK(t, err == nil)
-	assert.OK(t, entry.Name() == "file-in-subfolder.txt")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
+	assert.Equal(t, "/subfolder/file-in-subfolder.txt", entry.Path())
 	reader, err := entry.Reader()
-	assert.OK(t, err == nil)
+	assert.Equal(t, nil, err)
 	content, err := ioutil.ReadAll(reader)
-	assert.OK(t, err == nil)
-	assert.OK(t, string(content) == "hello world from subfolder\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
