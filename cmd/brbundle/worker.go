@@ -23,10 +23,10 @@ func processInput(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirP
 	etag := fmt.Sprintf("%x-%x", size, entry.Info.ModTime().Unix())
 
 	err = compressor.Compress(srcFile)
+	srcFile.Close()
 	if err != nil {
 		color.Red("  compression error: %s\n", srcPath, err.Error())
 	}
-	srcFile.Close()
 
 	var wg sync.WaitGroup
 	wg.Add(2)

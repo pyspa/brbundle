@@ -13,8 +13,7 @@ type Compressor struct {
 	useLZ4         bool
 	reader         *io.PipeReader
 	writer         *io.PipeWriter
-	compressed     *bytes.Buffer
-	source         *os.File
+	result         *bytes.Buffer
 	skipCompress   bool
 	compressedSize int
 }
@@ -35,29 +34,29 @@ func HasLZ4() bool {
 
 func NewCompressor(useBrotli, useLZ4 bool) *Compressor {
 	return &Compressor{
-		useBrotli:  useBrotli,
-		useLZ4:     useLZ4,
-		compressed: &bytes.Buffer{},
+		useBrotli: useBrotli,
+		useLZ4:    useLZ4,
+		result:    &bytes.Buffer{},
 	}
 }
 
 func (c *Compressor) Init() {
-	c.compressed.Reset()
+	c.result.Reset()
 	reader, writer := io.Pipe()
 	c.reader = reader
 	c.writer = writer
 }
 
 func (c *Compressor) Compress(src *os.File) (err error) {
-	c.source = src
 	if !c.useLZ4 {
+		io.Copy(c.result, src)
 		return
 	}
 	var cmd *exec.Cmd
 	if c.useBrotli {
 		cmd = exec.Command("brotli", "--stdout")
 	} else {
-		cmd = exec.Command("lz4", "-9")
+		cmd = exec.Command("lz4", "-9", "-c")
 	}
 	go func() {
 		io.Copy(c.writer, src)
@@ -65,10 +64,10 @@ func (c *Compressor) Compress(src *os.File) (err error) {
 		c.reader.Close()
 	}()
 	cmd.Stdin = c.reader
-	cmd.Stdout = c.compressed
+	cmd.Stdout = c.result
 	err = cmd.Run()
 	stat, err := src.Stat()
-	c.compressedSize = c.compressed.Len()
+	c.compressedSize = c.result.Len()
 	if err == nil {
 		c.skipCompress = !c.shouldUseCompressedResult(int(stat.Size()))
 	} else {
@@ -93,13 +92,7 @@ func (c Compressor) CompressionFlag() string {
 }
 
 func (c *Compressor) WriteTo(w io.Writer) (n int64, err error) {
-	defer c.source.Close()
-	if c.skipCompress {
-		c.source.Seek(0, 1)
-		return io.Copy(w, c.source)
-	} else {
-		return io.Copy(w, c.compressed)
-	}
+	return io.Copy(w, c.result)
 }
 
 func (c Compressor) shouldUseCompressedResult(uncompressed int) bool {

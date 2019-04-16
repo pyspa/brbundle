@@ -3,13 +3,13 @@ package main
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
-	"github.com/fatih/color"
 	"io"
 	"path"
 	"strings"
 	"sync"
 	"time"
+	
+	"github.com/fatih/color"
 )
 
 func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPrefix string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
@@ -37,8 +37,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 			if err != nil {
 				color.Red("  write file error: %s\n", entry.Path, err.Error())
 			} else {
-				size, err := writerTo.WriteTo(f)
-				fmt.Println(cleanPath(dirPrefix, entry.Path), size, err)
+				writerTo.WriteTo(f)
 			}
 		})
 
