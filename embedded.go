@@ -82,7 +82,7 @@ func (e *embeddedFileInfo) Sys() interface{} {
 	return nil
 }
 
-type EmbeddedPod struct {
+type EmbeddedBundle struct {
 	decompressor  Decompressor
 	decryptor     Decryptor
 	dirs          map[string][]string
@@ -90,7 +90,7 @@ type EmbeddedPod struct {
 	encryptionKey []byte
 }
 
-func (e EmbeddedPod) Find(path string) FileEntry {
+func (e EmbeddedBundle) Find(path string) FileEntry {
 	entry, ok := e.files[path]
 	if ok {
 		return &embeddedFileEntry{
@@ -102,7 +102,7 @@ func (e EmbeddedPod) Find(path string) FileEntry {
 	return nil
 }
 
-func (e EmbeddedPod) Readdir(path string) []FileEntry {
+func (e EmbeddedBundle) Readdir(path string) []FileEntry {
 	filePaths := e.dirs[path]
 	var result []FileEntry
 	for _, filePath := range filePaths {
@@ -114,49 +114,49 @@ func (e EmbeddedPod) Readdir(path string) []FileEntry {
 	return result
 }
 
-func (e EmbeddedPod) Close() error {
+func (e EmbeddedBundle) Close() error {
 	// do nothing
 	return nil
 }
 
-func NewEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) (FilePod, error) {
-	return func(key ...[]byte) (FilePod, error) {
+func NewEmbeddedBundle(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) (FileBundle, error) {
+	return func(key ...[]byte) (FileBundle, error) {
 		if decryptor.NeedKey() {
 			if len(key) < 1 {
 				return nil, errors.New("Key to decrypto is needed")
 			}
 			decryptor.SetKey(key[0])
 		}
-		pod := &EmbeddedPod{
+		bundle := &EmbeddedBundle{
 			decompressor: decompressor,
 			decryptor:    decryptor,
 			dirs:         dirs,
 			files:        files,
 		}
 		if len(key) > 0 {
-			pod.encryptionKey = key[0]
+			bundle.encryptionKey = key[0]
 		}
-		return pod, nil
+		return bundle, nil
 	}
 }
 
-func MustEmbeddedPod(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) FilePod {
-	return func(key ...[]byte) FilePod {
+func MustEmbeddedBundle(decompressor Decompressor, decryptor Decryptor, dirs map[string][]string, files map[string]*Entry) func(key ...[]byte) FileBundle {
+	return func(key ...[]byte) FileBundle {
 		if decryptor.NeedKey() {
 			if len(key) < 1 {
 				panic(errors.New("Key to decrypto is needed"))
 			}
 			decryptor.SetKey(key[0])
 		}
-		pod := &EmbeddedPod{
+		bundle := &EmbeddedBundle{
 			decompressor: decompressor,
 			decryptor:    decryptor,
 			dirs:         dirs,
 			files:        files,
 		}
 		if len(key) > 0 {
-			pod.encryptionKey = key[0]
+			bundle.encryptionKey = key[0]
 		}
-		return pod
+		return bundle
 	}
 }

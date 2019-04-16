@@ -2,15 +2,14 @@ package main
 
 import (
 	"archive/zip"
-	"github.com/shibukawa/brbundle"
-	"io"
-	"os"
-	"runtime"
+	"errors"
 	"github.com/fatih/color"
+	"io"
 	"sync"
+	"time"
 )
 
-func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
+func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
 	for entry := range jobs {
 		compressor.Init()
 		encryptor.Init()
@@ -20,13 +19,17 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 			Method: zip.Store,
 		}
 		header.SetMode(entry.Info.Mode())
-		header.SetModTime(entry.Info.ModTime())
+		if date != nil {
+			header.Modified = *date
+		} else {
+			header.Modified = entry.Info.ModTime()
+		}
 
-		processInput(compressor, encryptor, srcDirPath, entry, func(writerTo io.WriterTo, etag string) {
+		processInput(compressor, encryptor, srcDirPath, entry, func(writerTo io.WriterTo, comment string) {
 			lock.Lock()
 			defer lock.Unlock()
 
-			header.Comment = etag
+			header.Comment = comment
 			f, err := w.CreateHeader(header)
 			if err != nil {
 				color.Red("  write file error: %s\n", entry.Path, err.Error())
@@ -39,22 +42,30 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 	wait <- struct{}{}
 }
 
-func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ekey, nonce []byte, zipFile *os.File, srcDirPath, mode string) {
+func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath, mode string, date *time.Time) error {
+
+	_, err := NewEncryptor(encryptionKey)
+	if err != nil {
+		return errors.New("Can't create encryptor")
+	}
+
 	writer := zip.NewWriter(zipFile)
 	var lock sync.Mutex
 
-	color.Cyan("%s Mode (Compression: %s, Encyrption: %s)\n\n", mode, ctype, etype)
+	color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", mode, brotli, len(encryptionKey) != 0)
 
 	paths, _, ignored := Traverse(srcDirPath)
 
 	wait := make(chan struct{})
-	for i := 0; i < runtime.NumCPU(); i++ {
-		go zipWorker(NewCompressor(ctype), NewEncryptor(etype, ekey, nonce), srcDirPath, writer, &lock, paths, wait)
+	// runtime.NumCPU()
+	for i := 0; i < 1; i++ {
+		encryptor, _ := NewEncryptor(encryptionKey)
+		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, date, writer, &lock, paths, wait)
 	}
 
 	close(paths)
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < 1; i++ {
 		<-wait
 	}
 
@@ -63,4 +74,5 @@ func zipBundle(ctype brbundle.CompressionType, etype brbundle.EncryptionType, ek
 	}
 	writer.Close()
 	color.Cyan("\nDone\n\n")
+	return nil
 }

@@ -23,4 +23,3 @@ func truncateAddedZip(path string) error {
 	file.Close()
 	return err
 }
-

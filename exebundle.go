@@ -6,7 +6,7 @@ import (
 	"github.com/shibukawa/zipsection"
 )
 
-func NewExecutionPod(decompressor Decompressor, decryptor Decryptor, path ...string) (FilePod, error) {
+func NewExecutionBundle(decompressor Decompressor, decryptor Decryptor, path ...string) (FileBundle, error) {
 	var filepath string
 	if len(path) == 0 {
 		var err error
@@ -18,19 +18,19 @@ func NewExecutionPod(decompressor Decompressor, decryptor Decryptor, path ...str
 		filepath = path[0]
 	}
 	reader, closer, err := zipsection.Open(filepath)
-	pod, err := NewZipPodFromZipReader(decompressor, decryptor, reader)
+	bundle, err := NewZipBundleFromZipReader(decompressor, decryptor, reader)
 	if err != nil {
-		pod.(*ZipPod).OnClose(func() error {
+		bundle.(*ZipBundle).OnClose(func() error {
 			return closer.Close()
 		})
 	}
-	return pod, err
+	return bundle, err
 }
 
-func MustExecutionPod(decompressor Decompressor, decryptor Decryptor, path ...string) FilePod {
-	pod, err := NewExecutionPod(decompressor, decryptor, path...)
+func MustExecutionBundle(decompressor Decompressor, decryptor Decryptor, path ...string) FileBundle {
+	bundle, err := NewExecutionBundle(decompressor, decryptor, path...)
 	if err != nil {
 		panic(err)
 	}
-	return pod
+	return bundle
 }

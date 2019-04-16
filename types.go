@@ -10,7 +10,6 @@ const (
 
 	NoEncryption EncryptionType = iota
 	AES
-	ChaCha20Poly1305
 )
 
 func (c CompressionType) String() string {
@@ -25,26 +24,14 @@ func (c CompressionType) String() string {
 	return ""
 }
 
-func (c CompressionType) ConstantName() string {
+func (c CompressionType) Flag() string {
 	switch c {
 	case Brotli:
-		return "brbundle.Brotli"
+		return "b"
 	case LZ4:
-		return "brbundle.LZ4"
+		return "l"
 	case NoCompression:
-		return "brbundle.NoCompression"
-	}
-	return ""
-}
-
-func (c CompressionType) FunctionName() string {
-	switch c {
-	case Brotli:
-		return "brbundle.BrotliDecompressor()"
-	case LZ4:
-		return "brbundle.LZ4Decompressor()"
-	case NoCompression:
-		return "brbundle.NullDecompressor()"
+		return "-"
 	}
 	return ""
 }
@@ -53,34 +40,18 @@ func (e EncryptionType) String() string {
 	switch e {
 	case AES:
 		return "AES-256-GCM"
-	case ChaCha20Poly1305:
-		return "ChaCha20-Poly1305"
 	case NoEncryption:
 		return "no"
 	}
 	return ""
 }
 
-func (e EncryptionType) ConstantName() string {
+func (e EncryptionType) Flag() string {
 	switch e {
 	case AES:
-		return "brbundle.AES"
-	case ChaCha20Poly1305:
-		return "brbundle.ChaCha20Poly1305"
+		return "a"
 	case NoEncryption:
-		return "brbundle.NoEncryption"
-	}
-	return ""
-}
-
-func (e EncryptionType) FunctionName() string {
-	switch e {
-	case AES:
-		return "brbundle.AESDecryptor()"
-	case ChaCha20Poly1305:
-		return "brbundle.ChaChaDecryptor()"
-	case NoEncryption:
-		return "brbundle.NullDecryptor()"
+		return "-"
 	}
 	return ""
 }

@@ -38,27 +38,27 @@ type FileEntry interface {
 	Path() string
 }
 
-type FilePod interface {
+type FileBundle interface {
 	Find(path string) FileEntry
 	Readdir(path string) []FileEntry
 	Close() error
 }
 
 type Bundle struct {
-	pods []FilePod
+	bundles []FileBundle
 }
 
-func NewBundle(pods ...FilePod) *Bundle {
-	return &Bundle{pods}
+func NewBundle(bundles ...FileBundle) *Bundle {
+	return &Bundle{bundles}
 }
 
-func (b *Bundle) AddPod(pod FilePod) {
-	b.pods = append(b.pods, pod)
+func (b *Bundle) AddBundle(bundle FileBundle) {
+	b.bundles = append(b.bundles, bundle)
 }
 
 func (b Bundle) Find(path string) (FileEntry, error) {
-	for _, pod := range b.pods {
-		entry := pod.Find(path)
+	for _, bundle := range b.bundles {
+		entry := bundle.Find(path)
 		if entry != nil {
 			return entry, nil
 		}
@@ -70,8 +70,8 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 	var foundFiles = make(map[string]FileEntry)
 	var fileNames []string
 	var found = false
-	for _, pod := range b.pods {
-		entries := pod.Readdir(path)
+	for _, bundle := range b.bundles {
+		entries := bundle.Readdir(path)
 		if entries != nil {
 			found = true
 			for _, entry := range entries {
@@ -93,19 +93,19 @@ func (b Bundle) Readdir(path string) ([]FileEntry, error) {
 	return result, nil
 }
 
-func (b *Bundle) Close(deletePod FilePod) error {
-	var pods []FilePod
-	if len(b.pods) > 1 {
-		pods = make([]FilePod, 0, len(b.pods)-1)
+func (b *Bundle) Close(deleteBundle FileBundle) error {
+	var bundles []FileBundle
+	if len(b.bundles) > 1 {
+		bundles = make([]FileBundle, 0, len(b.bundles)-1)
 	}
 
 	var err error
 
-	for _, pod := range b.pods {
-		if pod != deletePod {
-			pods = append(pods, pod)
+	for _, bundle := range b.bundles {
+		if bundle != deleteBundle {
+			bundles = append(bundles, bundle)
 		} else {
-			err = pod.Close()
+			err = bundle.Close()
 		}
 	}
 	return err

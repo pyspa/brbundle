@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewFileSystem_NoBrotli(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 
 	s := httptest.NewServer(brbundle.ServerMount("/static", bundle))
 	defer s.Close()
@@ -28,7 +28,7 @@ func TestNewFileSystem_NoBrotli(t *testing.T) {
 }
 
 func TestNewFileSystem_Brotli(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 
 	s := httptest.NewServer(brbundle.ServerMount("/static", bundle))
 	defer s.Close()

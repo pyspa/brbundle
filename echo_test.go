@@ -14,7 +14,7 @@ import (
 func TestNewFileSystem_ForEcho_NoBrotli(t *testing.T) {
 	e := echo.New()
 
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 	handler := brbundle.EchoMount("/static", bundle)
 
 	req := httptest.NewRequest(echo.GET, "/", nil)
@@ -32,7 +32,7 @@ func TestNewFileSystem_ForEcho_NoBrotli(t *testing.T) {
 func TestNewFileSystem_ForEcho_Brotli(t *testing.T) {
 	e := echo.New()
 
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/br-nocrypto.zip"))
 	handler := brbundle.EchoMount("/static", bundle)
 
 	req := httptest.NewRequest(echo.GET, "/", nil)

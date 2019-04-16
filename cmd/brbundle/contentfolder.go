@@ -7,11 +7,10 @@ import (
 	"runtime"
 
 	"github.com/fatih/color"
-	"github.com/shibukawa/brbundle"
 )
 
 func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan Entry, wait chan<- struct{}) {
-	compressor := NewCompressor(brbundle.NoCompression)
+	compressor := NewCompressor(false, false)
 	for entry := range jobs {
 		outputPath := filepath.Join(destPath, entry.Path)
 		output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, entry.Info.Mode())
@@ -34,8 +33,8 @@ func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan E
 	wait <- struct{}{}
 }
 
-func createContentFolder(etype brbundle.EncryptionType, ekey, nonce []byte, destPath, srcDirPath string) {
-	color.Cyan("Content Folder Mode (Encyrption: %s)\n\n", etype)
+func createContentFolder(ekey []byte, destPath, srcDirPath string) {
+	color.Cyan("Content Folder Mode (Encyrption: %b)\n\n", len(ekey) == 0)
 
 	os.MkdirAll(destPath, 0755)
 	paths, dirs, ignored := Traverse(srcDirPath)
@@ -46,7 +45,8 @@ func createContentFolder(etype brbundle.EncryptionType, ekey, nonce []byte, dest
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go copyWorker(NewEncryptor(etype, ekey, nonce), destPath, srcDirPath, paths, wait)
+		encrypto, _ := NewEncryptor(ekey)
+		go copyWorker(encrypto, destPath, srcDirPath, paths, wait)
 	}
 
 	close(paths)

@@ -5,7 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
-	"golang.org/x/crypto/chacha20poly1305"
 	"io"
 	"io/ioutil"
 )
@@ -23,7 +22,7 @@ type aesDecryptor struct {
 
 func (a aesDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
 	if a.aead == nil {
-		return nil, errors.New("Encryption Key is not set. Call SetKey() or set it via 1st param of Pod")
+		return nil, errors.New("Encryption Key is not set. Call SetKey() or set it via 1st param of Bundle")
 	}
 	nonce := make([]byte, a.aead.NonceSize())
 	io.ReadFull(input, nonce)
@@ -62,49 +61,6 @@ func (a aesDecryptor) HasKey() bool {
 
 func AESDecryptor(key ...[]byte) Decryptor {
 	result := &aesDecryptor{}
-	if len(key) > 0 {
-		result.SetKey(key[0])
-	}
-	return result
-}
-
-type chaChaDecryptor struct {
-	aead cipher.AEAD
-}
-
-func (c chaChaDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
-	nonce := make([]byte, c.aead.NonceSize())
-	io.ReadFull(input, nonce)
-	cipherData, err := ioutil.ReadAll(input)
-	if err != nil {
-		return nil, err
-	}
-	plainData, err := c.aead.Open(nil, nonce, cipherData, nil)
-	if err != nil {
-		return nil, err
-	}
-	return bytes.NewReader(plainData), nil
-}
-
-func (c chaChaDecryptor) NeedKey() bool {
-	return true
-}
-
-func (c *chaChaDecryptor) SetKey(key []byte) error {
-	chacha, err := chacha20poly1305.New(key)
-	if err != nil {
-		return err
-	}
-	c.aead = chacha
-	return nil
-}
-
-func (c chaChaDecryptor) HasKey() bool {
-	return c.aead != nil
-}
-
-func ChaChaDecryptor(key ...[]byte) Decryptor {
-	result := &chaChaDecryptor{}
 	if len(key) > 0 {
 		result.SetKey(key[0])
 	}

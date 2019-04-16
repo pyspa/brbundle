@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestExecutionPod_Windows_RootFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
+func TestExecutionBundle_Windows_RootFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -20,8 +20,8 @@ func TestExecutionPod_Windows_RootFile(t *testing.T) {
 	assert.Equal(t, "hello world from root\n", string(content))
 }
 
-func TestExecutionPod_Windows_SubDirFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
+func TestExecutionBundle_Windows_SubDirFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.exe"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
@@ -33,8 +33,8 @@ func TestExecutionPod_Windows_SubDirFile(t *testing.T) {
 	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
-func TestExecutionPod_Linux_RootFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
+func TestExecutionBundle_Linux_RootFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -46,8 +46,8 @@ func TestExecutionPod_Linux_RootFile(t *testing.T) {
 	assert.Equal(t, "hello world from root\n", string(content))
 }
 
-func TestExecutionPod_Linux_SubDirFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
+func TestExecutionBundle_Linux_SubDirFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.linux"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
@@ -59,8 +59,8 @@ func TestExecutionPod_Linux_SubDirFile(t *testing.T) {
 	assert.Equal(t, "hello world from subfolder\n", string(content))
 }
 
-func TestExecutionPod_Darwin_RootFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
+func TestExecutionBundle_Darwin_RootFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -72,8 +72,8 @@ func TestExecutionPod_Darwin_RootFile(t *testing.T) {
 	assert.Equal(t, "hello world from root\n", string(content))
 }
 
-func TestExecutionPod_Darwin_SubDirFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustExecutionPod(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
+func TestExecutionBundle_Darwin_SubDirFile(t *testing.T) {
+	var bundle = brbundle.NewBundle(brbundle.MustExecutionBundle(brbundle.BrotliDecompressor(), brbundle.NullDecryptor(), "./testdata/testexe/testexe.darwin"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())

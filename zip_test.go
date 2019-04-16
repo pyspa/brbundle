@@ -8,7 +8,7 @@ import (
 )
 
 func TestZipRawNoCrypto_RootFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.NullDecompressor(), brbundle.NullDecryptor(), "./testdata/raw-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.NullDecompressor(), brbundle.NullDecryptor(), "./testdata/raw-nocrypto.zip"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -21,7 +21,7 @@ func TestZipRawNoCrypto_RootFile(t *testing.T) {
 }
 
 func TestZipRawNoCrypto_SubDirFile(t *testing.T) {
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.NullDecompressor(), brbundle.NullDecryptor(), "./testdata/raw-nocrypto.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.NullDecompressor(), brbundle.NullDecryptor(), "./testdata/raw-nocrypto.zip"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
@@ -35,7 +35,7 @@ func TestZipRawNoCrypto_SubDirFile(t *testing.T) {
 
 func TestZipBrotliAES_RootFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey), "./testdata/br-aes.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey), "./testdata/br-aes.zip"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -49,7 +49,7 @@ func TestZipBrotliAES_RootFile(t *testing.T) {
 
 func TestZipBrotliAES_SubDirFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey), "./testdata/br-aes.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.BrotliDecompressor(), brbundle.AESDecryptor(encryptKey), "./testdata/br-aes.zip"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
@@ -63,7 +63,7 @@ func TestZipBrotliAES_SubDirFile(t *testing.T) {
 
 func TestZipLZ4ChaCha_RootFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.LZ4Decompressor(), brbundle.ChaChaDecryptor(encryptKey), "./testdata/lz4-chacha.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.LZ4Decompressor(), brbundle.ChaChaDecryptor(encryptKey), "./testdata/lz4-chacha.zip"))
 	entry, err := bundle.Find("/rootfile.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "rootfile.txt", entry.Name())
@@ -77,7 +77,7 @@ func TestZipLZ4ChaCha_RootFile(t *testing.T) {
 
 func TestZipLZ4ChaCha_SubDirFile(t *testing.T) {
 	encryptKey := []byte("12345678123456781234567812345678")
-	var bundle = brbundle.NewBundle(brbundle.MustZipPod(brbundle.LZ4Decompressor(), brbundle.ChaChaDecryptor(encryptKey), "./testdata/lz4-chacha.zip"))
+	var bundle = brbundle.NewBundle(brbundle.MustZipBundle(brbundle.LZ4Decompressor(), brbundle.ChaChaDecryptor(encryptKey), "./testdata/lz4-chacha.zip"))
 	entry, err := bundle.Find("/subfolder/file-in-subfolder.txt")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "file-in-subfolder.txt", entry.Name())
