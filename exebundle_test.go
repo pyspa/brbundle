@@ -1,8 +1,8 @@
 package brbundle_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/shibukawa/brbundle"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
 )

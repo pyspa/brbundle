@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/dsnet/compress/brotli"
 	"github.com/shibukawa/brbundle"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewFileSystem_NoBrotli(t *testing.T) {

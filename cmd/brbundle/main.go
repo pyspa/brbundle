@@ -23,6 +23,7 @@ var (
 	bundleCommand       = app.Command("bundle", "Append static files to an execution file")
 	bundleCryptoKey     = bundleCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
 	bundleCompress      = bundleCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
+	bundleDirPrefix     = bundleCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	bundleSpecifiedDate = bundleCommand.Flag("date", "Pseudo date of files").Short('d').String()
 	bundleTargetExec    = bundleCommand.Arg("exec", "Target execution file path").Required().ExistingFile()
 	bundleSourceDir     = bundleCommand.Arg("src", "Directory that contains static files").Required().ExistingDir()
@@ -30,6 +31,7 @@ var (
 	zipCommand       = app.Command("zip", "Make single zip file")
 	zipCryptoKey     = zipCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
 	zipCompress      = zipCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
+	zipDirPrefix     = zipCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	zipSpecifiedDate = zipCommand.Flag("date", "Pseudo date of files").Short('d').String()
 	zipOutputFile    = zipCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY, 0644)
 	zipSourceDir     = zipCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
@@ -39,6 +41,7 @@ var (
 	embeddedCompress      = embeddedCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
 	packageName           = embeddedCommand.Flag("package", "Package name").Short('p').Default("main").String()
 	outputFileName        = embeddedCommand.Flag("output", "Output file name").Short('o').Default("embedded-bundle.go").OpenFile(os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
+	embeddedDirPrefix     = embeddedCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	embeddedSpecifiedDate = embeddedCommand.Flag("date", "Pseudo date of files").Short('d').String()
 	embeddedSourceDir     = embeddedCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 )
@@ -83,21 +86,21 @@ func main() {
 		if err != nil {
 			break
 		}
-		appendToExec(*bundleCompress, cryptoKey, *bundleTargetExec, *bundleSourceDir, date)
+		appendToExec(*bundleCompress, cryptoKey, *bundleTargetExec, *bundleSourceDir, *bundleDirPrefix, date)
 	case zipCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
-		cryptoKey, err = decodeEncryptKey(*zipCryptoKey)
+		cryptoKey, date, err = parseKeyAndDate(*zipCryptoKey, *bundleSpecifiedDate)
 		if err != nil {
 			break
 		}
-		zipBundle(*zipCompress, cryptoKey, *zipOutputFile, *zipSourceDir, "Zip", date)
+		err = zipBundle(*zipCompress, cryptoKey, *zipOutputFile, *zipSourceDir, *zipDirPrefix, "Zip", date)
 	case embeddedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*embeddedCryptoKey, *embeddedSpecifiedDate)
 		if err != nil {
 			break
 		}
-		embedded(*embeddedCompress, cryptoKey, *packageName, *outputFileName, *embeddedSourceDir, date)
+		err = embedded(*embeddedCompress, cryptoKey, *packageName, *outputFileName, *embeddedSourceDir, *embeddedDirPrefix, date)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, color.RedString("%v", err))

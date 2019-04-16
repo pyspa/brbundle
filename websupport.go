@@ -1,10 +1,9 @@
 package brbundle
 
-
 import (
-	"strings"
-	"strconv"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 const DefaultQValue = 1.0

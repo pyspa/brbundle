@@ -19,7 +19,7 @@ func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan E
 			continue
 		}
 
-		err = processInput(compressor, encryptor, srcDirPath, entry, func(writerTo io.WriterTo, etag string) {
+		err = processInput(compressor, encryptor, srcDirPath, "", entry, func(writerTo io.WriterTo, etag string) {
 			writerTo.WriteTo(output)
 			output.Close()
 		})
@@ -34,7 +34,7 @@ func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan E
 }
 
 func createContentFolder(ekey []byte, destPath, srcDirPath string) {
-	color.Cyan("Content Folder Mode (Encyrption: %b)\n\n", len(ekey) == 0)
+	color.Cyan("Content Folder Mode (Encryption: %v)\n\n", len(ekey) == 0)
 
 	os.MkdirAll(destPath, 0755)
 	paths, dirs, ignored := Traverse(srcDirPath)

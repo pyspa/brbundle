@@ -3,19 +3,22 @@ package main
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
 	"github.com/fatih/color"
 	"io"
+	"path"
+	"strings"
 	"sync"
 	"time"
 )
 
-func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
+func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPrefix string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
 	for entry := range jobs {
 		compressor.Init()
 		encryptor.Init()
 
 		header := &zip.FileHeader{
-			Name:   entry.Path,
+			Name:   cleanPath(dirPrefix, entry.Path),
 			Method: zip.Store,
 		}
 		header.SetMode(entry.Info.Mode())
@@ -25,7 +28,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 			header.Modified = entry.Info.ModTime()
 		}
 
-		processInput(compressor, encryptor, srcDirPath, entry, func(writerTo io.WriterTo, comment string) {
+		processInput(compressor, encryptor, srcDirPath, dirPrefix, entry, func(writerTo io.WriterTo, comment string) {
 			lock.Lock()
 			defer lock.Unlock()
 
@@ -34,7 +37,8 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 			if err != nil {
 				color.Red("  write file error: %s\n", entry.Path, err.Error())
 			} else {
-				writerTo.WriteTo(f)
+				size, err := writerTo.WriteTo(f)
+				fmt.Println(cleanPath(dirPrefix, entry.Path), size, err)
 			}
 		})
 
@@ -42,7 +46,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath string, 
 	wait <- struct{}{}
 }
 
-func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath, mode string, date *time.Time) error {
+func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
 
 	_, err := NewEncryptor(encryptionKey)
 	if err != nil {
@@ -60,7 +64,7 @@ func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath,
 	// runtime.NumCPU()
 	for i := 0; i < 1; i++ {
 		encryptor, _ := NewEncryptor(encryptionKey)
-		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, date, writer, &lock, paths, wait)
+		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, writer, &lock, paths, wait)
 	}
 
 	close(paths)
@@ -75,4 +79,15 @@ func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath,
 	writer.Close()
 	color.Cyan("\nDone\n\n")
 	return nil
+}
+
+func cleanPath(prefix, filePath string) string {
+	prefix = strings.ReplaceAll(prefix, `\`, "/")
+	filePath = strings.ReplaceAll(filePath, `\`, "/")
+	result := path.Clean(path.Join(prefix, filePath))
+	if strings.HasPrefix(result, "/") {
+		return result[1:]
+	} else {
+		return result
+	}
 }

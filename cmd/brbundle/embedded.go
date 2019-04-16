@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"go/format"
 	"os"
+	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -21,7 +22,6 @@ import (
     "github.com/shibukawa/brbundle"
 )
 
-// [[.VariableName]] returns content bundle for brbundle FileSystem
 var [[.VariableName]] = [[.Content]]
 
 func init() {
@@ -37,12 +37,12 @@ type Context struct {
 }
 
 func (c Context) Content() string {
-	return fmt.Sprintf("[]byte(%#v)", string(c.zipContent.Bytes()))
+	return formatContent(c.zipContent.Bytes(), 70)
 }
 
-func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath string, date *time.Time) error {
+func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath, dirPrefix string, date *time.Time) error {
 	var zipContent bytes.Buffer
-	zipBundle(brotli, encryptionKey, &zipContent, srcDirPath, "Embedded File", date)
+	zipBundle(brotli, encryptionKey, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
 
 	_, err := NewEncryptor(encryptionKey)
 	if err != nil {
@@ -75,4 +75,42 @@ func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *o
 	}
 	color.Cyan("\nDone\n\n")
 	return nil
+}
+
+func splitByte(src []byte, length int) []string {
+	var result []string
+
+	str := fmt.Sprintf("%#v", string(src))
+	str = str[1 : len(str)-1]
+	start := 0
+	for i := 0; i < len(str)-3; i++ {
+		if i-start > length {
+			result = append(result, str[start:i])
+			start = i
+		}
+		if str[i:i+2] == `\x` {
+			i += 3
+		} else if str[i:i+1] == `\` {
+			i += 1
+		}
+	}
+	result = append(result, str[start:])
+
+	return result
+}
+
+func formatContent(src []byte, length int) string {
+	lines := splitByte(src, length)
+	quoted := make([]string, len(lines))
+	for i, line := range lines {
+		quoted[i] = fmt.Sprintf("\"%s\"", line)
+	}
+	switch len(quoted) {
+	case 0:
+		return "[]byte(\"\")"
+	case 1:
+		return fmt.Sprintf("[]byte(%s)", quoted[0])
+	default:
+		return fmt.Sprintf("[]byte(\n\t%s)", strings.Join(quoted, " +\n\t"))
+	}
 }

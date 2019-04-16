@@ -1,7 +1,7 @@
 .DS_Store
 .idea
-testdata/raw-*
-testdata/br-*
+testdata/content-*
+testdata/*.zip
 testdata/testexe/testexe.darwin
 testdata/testexe/testexe.exe
 testdata/testexe/testexe.linux
