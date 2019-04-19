@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"path"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -45,20 +46,20 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 	wait <- struct{}{}
 }
 
-func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
+func packedBundle(brotli bool, encryptionKey []byte, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
 
 	e, err := NewEncryptor(encryptionKey)
 	if err != nil {
 		return errors.New("Can't create encryptor")
 	}
 
-	w := zip.NewWriter(zipFile)
+	w := zip.NewWriter(outFile)
 	defer w.Close()
 	w.SetComment(e.EncryptionFlag())
 	var lock sync.Mutex
 
 	if mode == "" {
-		color.Cyan("Zip Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", brotli, len(encryptionKey) != 0)
+		color.Cyan("Packed Bundle Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", brotli, len(encryptionKey) != 0)
 	} else {
 		color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", mode, brotli, len(encryptionKey) != 0)
 	}
@@ -66,15 +67,14 @@ func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath,
 	paths, _, ignored := Traverse(srcDirPath)
 
 	wait := make(chan struct{})
-	// runtime.NumCPU()
-	for i := 0; i < 1; i++ {
+	for i := 0; i < runtime.NumCPU(); i++ {
 		encryptor, _ := NewEncryptor(encryptionKey)
 		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, w, &lock, paths, wait)
 	}
 
 	close(paths)
 
-	for i := 0; i < 1; i++ {
+	for i := 0; i < runtime.NumCPU(); i++ {
 		<-wait
 	}
 

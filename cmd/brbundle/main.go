@@ -28,13 +28,13 @@ var (
 	bundleTargetExec    = bundleCommand.Arg("exec", "Target execution file path").Required().ExistingFile()
 	bundleSourceDir     = bundleCommand.Arg("src", "Directory that contains static files").Required().ExistingDir()
 
-	zipCommand       = app.Command("zip", "Make single zip file")
-	zipCryptoKey     = zipCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
-	zipCompress      = zipCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
-	zipDirPrefix     = zipCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
-	zipSpecifiedDate = zipCommand.Flag("date", "Pseudo date of files").Short('d').String()
-	zipOutputFile    = zipCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-	zipSourceDir     = zipCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
+	packedCommand       = app.Command("pack", "Make single packed file")
+	packedCryptoKey     = packedCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
+	packedCompress      = packedCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
+	packedDirPrefix     = packedCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
+	packedSpecifiedDate = packedCommand.Flag("date", "Pseudo date of files").Short('d').String()
+	packedOutputFile    = packedCommand.Arg("out-path", "Output file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	packedSourceDir     = packedCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 
 	embeddedCommand       = app.Command("embedded", "Generate Golang code that contains")
 	embeddedCryptoKey     = embeddedCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
@@ -88,14 +88,14 @@ func main() {
 			break
 		}
 		appendToExec(*bundleCompress, cryptoKey, *bundleTargetExec, *bundleSourceDir, *bundleDirPrefix, date)
-	case zipCommand.FullCommand():
+	case packedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
-		cryptoKey, date, err = parseKeyAndDate(*zipCryptoKey, *bundleSpecifiedDate)
+		cryptoKey, date, err = parseKeyAndDate(*packedCryptoKey, *bundleSpecifiedDate)
 		if err != nil {
 			break
 		}
-		defer (*zipOutputFile).Close()
-		err = zipBundle(*zipCompress, cryptoKey, *zipOutputFile, *zipSourceDir, *zipDirPrefix, "", date)
+		defer (*packedOutputFile).Close()
+		err = packedBundle(*packedCompress, cryptoKey, *packedOutputFile, *packedSourceDir, *packedDirPrefix, "", date)
 	case embeddedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*embeddedCryptoKey, *embeddedSpecifiedDate)

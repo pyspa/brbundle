@@ -47,7 +47,7 @@ func (c Context) BundleName() string {
 
 func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath, dirPrefix, bundleName string, date *time.Time) error {
 	var zipContent bytes.Buffer
-	zipBundle(brotli, encryptionKey, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
+	packedBundle(brotli, encryptionKey, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
 
 	_, err := NewEncryptor(encryptionKey)
 	if err != nil {

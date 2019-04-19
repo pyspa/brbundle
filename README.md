@@ -48,8 +48,14 @@ This tool supports 4 options to bundle assets:
 
   For debugging. You can access content files without any building tasks.
 
+## Internal Design
 
-## Selecting Compression Method
+### File Format
+
+It uses zip format to make single packed file. Embedded bundles and Exe bundles also use zip format.
+It doesn't use Deflate algorithm. It uses Brotli or LZ4 inside it.
+
+### Selecting Compression Method
 
 BRBundle chooses compression format Brotli and LZ4 automatically.
 
