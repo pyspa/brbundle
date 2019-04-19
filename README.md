@@ -1,5 +1,54 @@
 # BRBundle
 
+## Flow Chart
+
+```text
++--------------+      Yes
+| go gettable? |+------------> Embedded Bundle
++----+---------+                    ^
+     |                              |
+     | No                           | Yes
+     v                              |
++----------------+    Yes      +------------+    No
+| Single Binary? |+----------> | Gopher.js? +---------->Exe Bundle
++----+-----------+             +------------+
+     |
+     | No
+     v
++--------+            Yes
+| Debug? +--------------------> Folder Bundle
++----+---+
+     |
+     | No
+     v
+   Packed Bundle
+```
+
+by [asciiflow](http://stable.ascii-flow.appspot.com/#Draw)
+
+## Bundling Options
+
+This tool supports 4 options to bundle assets:
+
+* Embedded Bundle
+
+  This tool generates .go file. You have to generate .go file before compiling your application.
+  This option is go-gettable.
+  
+* Exe Bundle
+
+  This tool appends content files to your application. You can add them after compiling your application.
+  This is the best for application development.
+
+* Packed Bundle
+
+  This tool generates one single binary that includes content files.
+
+* Folder Bundle
+
+  For debugging. You can access content files without any building tasks.
+
+
 ## Selecting Compression Method
 
 BRBundle chooses compression format Brotli and LZ4 automatically.

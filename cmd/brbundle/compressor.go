@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	"github.com/shibukawa/brbundle"
 	"io"
 	"os"
 	"os/exec"
@@ -42,12 +42,15 @@ func NewCompressor(useBrotli, useLZ4 bool) *Compressor {
 
 func (c *Compressor) Init() {
 	c.result.Reset()
-	reader, writer := io.Pipe()
-	c.reader = reader
-	c.writer = writer
 }
 
-func (c *Compressor) Compress(src *os.File) (err error) {
+func (c *Compressor) Compress(srcPath string, size int) (err error) {
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
 	if !c.useLZ4 {
 		io.Copy(c.result, src)
 		return
@@ -58,35 +61,38 @@ func (c *Compressor) Compress(src *os.File) (err error) {
 	} else {
 		cmd = exec.Command("lz4", "-9", "-c")
 	}
+	c.reader, c.writer = io.Pipe()
 	go func() {
+		defer c.writer.Close()
 		io.Copy(c.writer, src)
-		c.writer.Close()
-		c.reader.Close()
 	}()
 	cmd.Stdin = c.reader
 	cmd.Stdout = c.result
 	err = cmd.Run()
-	stat, err := src.Stat()
 	c.compressedSize = c.result.Len()
 	if err == nil {
-		c.skipCompress = !c.shouldUseCompressedResult(int(stat.Size()))
-	} else {
-		fmt.Println(err)
+		c.skipCompress = !c.shouldUseCompressedResult(size)
+		if c.skipCompress {
+			src, _ := os.Open(srcPath)
+			defer src.Close()
+			c.result.Reset()
+			io.Copy(c.result, src)
+		}
 	}
 	return
 }
 
 func (c Compressor) CompressionFlag() string {
 	if !c.useLZ4 {
-		return "-"
+		return brbundle.NotToCompress
 	}
 	if c.skipCompress {
-		return "-"
+		return brbundle.NotToCompress
 	} else {
 		if c.useBrotli {
-			return "b"
+			return brbundle.UseBrotli
 		} else {
-			return "l"
+			return brbundle.UseLZ4
 		}
 	}
 }

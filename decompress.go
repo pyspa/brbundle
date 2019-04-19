@@ -1,31 +1,23 @@
 package brbundle
 
 import (
-	"github.com/dsnet/compress/brotli"
 	"io"
+
+	"github.com/dsnet/compress/brotli"
+	"github.com/pierrec/lz4"
 )
 
-type Decompressor interface {
-	Decompress(input io.Reader) io.Reader
-}
+type Decompressor func(io.Reader) io.Reader
 
-type brotliDecompressor struct{}
-
-func (b *brotliDecompressor) Decompress(input io.Reader) io.Reader {
+func brotliDecompressor(input io.Reader) io.Reader {
 	reader, _ := brotli.NewReader(input, nil)
 	return reader
 }
 
-func BrotliDecompressor() Decompressor {
-	return &brotliDecompressor{}
+func lz4Decompressor(input io.Reader) io.Reader {
+	return lz4.NewReader(input)
 }
 
-type nullDecompressor struct{}
-
-func (b *nullDecompressor) Decompress(input io.Reader) io.Reader {
+func nullDecompressor(input io.Reader) io.Reader {
 	return input
-}
-
-func NullDecompressor() Decompressor {
-	return &nullDecompressor{}
 }

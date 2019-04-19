@@ -59,9 +59,9 @@ func NewEncryptor(key []byte) (*Encryptor, error) {
 
 func (e Encryptor) EncryptionFlag() string {
 	if e.etype == brbundle.NoEncryption {
-		return "-"
+		return brbundle.NotToEncrypto
 	} else if e.etype == brbundle.AES {
-		return "a"
+		return brbundle.UseAES
 	}
 	panic("undefined encryption flags")
 }
@@ -94,7 +94,7 @@ func (e *Encryptor) WriteTo(w io.Writer) (n int64, err error) {
 		}
 		cipherContent := e.aead.Seal(nil, e.nonce, src, nil)
 		n, err := w.Write(cipherContent)
-		return int64(e.aead.NonceSize() + n), err
+		return int64(n), err
 	}
 	return
 }

@@ -11,60 +11,43 @@ import (
 
 type Decryptor interface {
 	Decrypto(input io.Reader) (io.Reader, error)
-	SetKey(key []byte) error
-	NeedKey() bool
-	HasKey() bool
 }
 
 type aesDecryptor struct {
-	aead cipher.AEAD
+	aead  cipher.AEAD
+	nonce []byte
 }
 
 func (a aesDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
 	if a.aead == nil {
 		return nil, errors.New("Encryption Key is not set. Call SetKey() or set it via 1st param of Bundle")
 	}
-	nonce := make([]byte, a.aead.NonceSize())
-	io.ReadFull(input, nonce)
 	cipherData, err := ioutil.ReadAll(input)
 	if err != nil {
 		return nil, err
 	}
-	plainData, err := a.aead.Open(nil, nonce, cipherData, nil)
+	plainData, err := a.aead.Open(nil, a.nonce, cipherData, nil)
 	if err != nil {
 		return nil, err
 	}
 	return bytes.NewReader(plainData), nil
 }
 
-func (a aesDecryptor) NeedKey() bool {
-	return true
-}
-
-func (a *aesDecryptor) SetKey(key []byte) error {
-	block, err := aes.NewCipher(key)
+func newAESDecryptor(key []byte) (Decryptor, error) {
+	block, err := aes.NewCipher(key[:32])
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	a.aead = aesgcm
-	return nil
-}
-
-func (a aesDecryptor) HasKey() bool {
-	return a.aead != nil
-}
-
-func AESDecryptor(key ...[]byte) Decryptor {
-	result := &aesDecryptor{}
-	if len(key) > 0 {
-		result.SetKey(key[0])
+	result := &aesDecryptor{
+		aead:  aesgcm,
+		nonce: key[32:],
 	}
-	return result
+	return result, nil
 }
 
 type nullDecryptor struct{}
@@ -73,18 +56,6 @@ func (n nullDecryptor) Decrypto(input io.Reader) (io.Reader, error) {
 	return input, nil
 }
 
-func (n *nullDecryptor) SetKey(key []byte) error {
-	return errors.New("NullDecryptor can't accept key")
-}
-
-func (n nullDecryptor) NeedKey() bool {
-	return false
-}
-
-func (n nullDecryptor) HasKey() bool {
-	return true
-}
-
-func NullDecryptor() Decryptor {
+func newNullDecryptor() Decryptor {
 	return &nullDecryptor{}
 }

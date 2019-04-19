@@ -33,12 +33,13 @@ var (
 	zipCompress      = zipCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
 	zipDirPrefix     = zipCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	zipSpecifiedDate = zipCommand.Flag("date", "Pseudo date of files").Short('d').String()
-	zipOutputFile    = zipCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY, 0644)
+	zipOutputFile    = zipCommand.Arg("zip-path", "Output zip file path").Required().OpenFile(os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	zipSourceDir     = zipCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 
 	embeddedCommand       = app.Command("embedded", "Generate Golang code that contains")
 	embeddedCryptoKey     = embeddedCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
 	embeddedCompress      = embeddedCommand.Flag("compress", "Compressed by Brotli").Short('z').Bool()
+	embeddedBundleName    = embeddedCommand.Flag("name", "Bundle name to specify the bundle. It is needed to load encrypted bundle.").Short('n').String()
 	packageName           = embeddedCommand.Flag("package", "Package name").Short('p').Default("main").String()
 	outputFileName        = embeddedCommand.Flag("output", "Output file name").Short('o').Default("embedded-bundle.go").OpenFile(os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	embeddedDirPrefix     = embeddedCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
@@ -93,14 +94,15 @@ func main() {
 		if err != nil {
 			break
 		}
-		err = zipBundle(*zipCompress, cryptoKey, *zipOutputFile, *zipSourceDir, *zipDirPrefix, "Zip", date)
+		defer (*zipOutputFile).Close()
+		err = zipBundle(*zipCompress, cryptoKey, *zipOutputFile, *zipSourceDir, *zipDirPrefix, "", date)
 	case embeddedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*embeddedCryptoKey, *embeddedSpecifiedDate)
 		if err != nil {
 			break
 		}
-		err = embedded(*embeddedCompress, cryptoKey, *packageName, *outputFileName, *embeddedSourceDir, *embeddedDirPrefix, date)
+		err = embedded(*embeddedCompress, cryptoKey, *packageName, *outputFileName, *embeddedSourceDir, *embeddedDirPrefix, *embeddedBundleName, date)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, color.RedString("%v", err))

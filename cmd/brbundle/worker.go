@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"io"
-	"os"
 	"path/filepath"
 	"sync"
 )
@@ -14,18 +13,12 @@ func processInput(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirP
 	encryptor.Init()
 
 	srcPath := filepath.Join(srcDirPath, entry.Path)
-	srcFile, err := os.Open(srcPath)
-	if err != nil {
-		color.Red("read error: %s: %s\n", srcPath, err.Error())
-		return err
-	}
 	size := int(entry.Info.Size())
 	etag := fmt.Sprintf("%x-%x", size, entry.Info.ModTime().Unix())
 
-	err = compressor.Compress(srcFile)
-	srcFile.Close()
+	err := compressor.Compress(srcPath, size)
 	if err != nil {
-		color.Red("  compression error: %s\n", srcPath, err.Error())
+		color.Red("  compression error: %s %v\n", srcPath, err.Error())
 	}
 
 	var wg sync.WaitGroup
@@ -38,7 +31,7 @@ func processInput(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirP
 	}()
 
 	go func() {
-		comment := compressor.CompressionFlag() + encryptor.EncryptionFlag() + etag
+		comment := compressor.CompressionFlag() + etag
 		callback(encryptor, comment)
 		wg.Done()
 	}()

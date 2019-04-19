@@ -25,7 +25,7 @@ import (
 var [[.VariableName]] = [[.Content]]
 
 func init() {
-    brbundle.MustReadBytes([[.VariableName]], brbundle.OrderEmbedded)
+    brbundle.RegisterEmbeddedBundle([[.VariableName]], [[.BundleName]])
 }
 `
 
@@ -33,6 +33,7 @@ type Context struct {
 	PackageName  string
 	zipContent   *bytes.Buffer
 	VariableName string
+	bundleName   string
 	lock         sync.Mutex
 }
 
@@ -40,7 +41,11 @@ func (c Context) Content() string {
 	return formatContent(c.zipContent.Bytes(), 70)
 }
 
-func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath, dirPrefix string, date *time.Time) error {
+func (c Context) BundleName() string {
+	return fmt.Sprintf("%#v", c.bundleName)
+}
+
+func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath, dirPrefix, bundleName string, date *time.Time) error {
 	var zipContent bytes.Buffer
 	zipBundle(brotli, encryptionKey, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
 
@@ -57,6 +62,7 @@ func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *o
 	context := &Context{
 		PackageName:  packageName,
 		VariableName: fmt.Sprintf("bundle_%s", hex.EncodeToString(h.Sum(nil))),
+		bundleName:   bundleName,
 		zipContent:   &zipContent,
 	}
 

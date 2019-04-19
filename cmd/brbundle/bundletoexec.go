@@ -13,5 +13,6 @@ func appendToExec(brotli bool, ekey []byte, filePath, srcDirPath, dirPrefix stri
 	}
 	truncateAddedZip(filePath)
 	exefile, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, stat.Mode())
+	defer exefile.Close()
 	zipBundle(brotli, ekey, exefile, srcDirPath, dirPrefix, "Bundle to Execution", date)
 }

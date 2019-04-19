@@ -8,6 +8,7 @@ require (
 	github.com/bkaradzic/go-lz4 v1.0.0
 	github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
 	github.com/fatih/color v1.7.0
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/k0kubun/pp v2.3.0+incompatible // indirect
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.2.8 // indirect

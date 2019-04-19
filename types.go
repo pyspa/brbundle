@@ -12,6 +12,15 @@ const (
 	AES
 )
 
+const (
+	UseBrotli     = "b"
+	UseLZ4        = "l"
+	NotToCompress = "-"
+
+	UseAES        = "a"
+	NotToEncrypto = "-"
+)
+
 func (c CompressionType) String() string {
 	switch c {
 	case Brotli:
@@ -27,11 +36,11 @@ func (c CompressionType) String() string {
 func (c CompressionType) Flag() string {
 	switch c {
 	case Brotli:
-		return "b"
+		return UseBrotli
 	case LZ4:
-		return "l"
+		return UseLZ4
 	case NoCompression:
-		return "-"
+		return NotToCompress
 	}
 	return ""
 }
@@ -49,9 +58,9 @@ func (e EncryptionType) String() string {
 func (e EncryptionType) Flag() string {
 	switch e {
 	case AES:
-		return "a"
+		return UseAES
 	case NoEncryption:
-		return "-"
+		return NotToEncrypto
 	}
 	return ""
 }

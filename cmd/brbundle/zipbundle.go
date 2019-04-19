@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	
+
 	"github.com/fatih/color"
 )
 
@@ -47,15 +47,21 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 
 func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
 
-	_, err := NewEncryptor(encryptionKey)
+	e, err := NewEncryptor(encryptionKey)
 	if err != nil {
 		return errors.New("Can't create encryptor")
 	}
 
-	writer := zip.NewWriter(zipFile)
+	w := zip.NewWriter(zipFile)
+	defer w.Close()
+	w.SetComment(e.EncryptionFlag())
 	var lock sync.Mutex
 
-	color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", mode, brotli, len(encryptionKey) != 0)
+	if mode == "" {
+		color.Cyan("Zip Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", brotli, len(encryptionKey) != 0)
+	} else {
+		color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", mode, brotli, len(encryptionKey) != 0)
+	}
 
 	paths, _, ignored := Traverse(srcDirPath)
 
@@ -63,7 +69,7 @@ func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath,
 	// runtime.NumCPU()
 	for i := 0; i < 1; i++ {
 		encryptor, _ := NewEncryptor(encryptionKey)
-		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, writer, &lock, paths, wait)
+		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, w, &lock, paths, wait)
 	}
 
 	close(paths)
@@ -75,8 +81,9 @@ func zipBundle(brotli bool, encryptionKey []byte, zipFile io.Writer, srcDirPath,
 	for _, path := range ignored {
 		color.Yellow("  ignored: %s\n", path)
 	}
-	writer.Close()
-	color.Cyan("\nDone\n\n")
+	if mode == "" {
+		color.Cyan("\nDone\n\n")
+	}
 	return nil
 }
 
