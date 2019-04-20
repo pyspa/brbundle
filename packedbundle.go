@@ -34,17 +34,11 @@ func newPackedBundle(reader *zip.Reader, closer io.Closer, option Option) *packe
 	return result
 }
 
-func (p packedBundle) find(path string) (FileEntry, error) {
-	if p.mountPoint != "" {
-		if !strings.HasPrefix(path, p.mountPoint) {
-			return nil, nil
-		}
-		path = path[len(p.mountPoint)+1:]
-	}
+func (p packedBundle) find(searchPath string) (FileEntry, error) {
 	i := sort.Search(len(p.reader.File), func(i int) bool {
-		return p.reader.File[i].Name >= path
+		return p.reader.File[i].Name >= searchPath
 	})
-	if i < len(p.reader.File) && p.reader.File[i].Name == path {
+	if i < len(p.reader.File) && p.reader.File[i].Name == searchPath {
 		decryptor, err := p.baseBundle.getDecryptor()
 		if err != nil {
 			return nil, err
@@ -63,7 +57,7 @@ func (p packedBundle) find(path string) (FileEntry, error) {
 			file:         file,
 			decompressor: decompressor,
 			decryptor:    decryptor,
-			mountPoint:   p.baseBundle.mountPoint,
+			logicalPath:  path.Clean("/" + path.Join(p.baseBundle.mountPoint, file.Name)),
 		}, nil
 	} else {
 		return nil, nil
@@ -80,13 +74,9 @@ func (p *packedBundle) close() {
 	}
 }
 
-func (packedBundle) getName() string {
-	panic("implement me")
-}
-
 type packedFileEntry struct {
 	file         *zip.File
-	mountPoint   string
+	logicalPath  string
 	decompressor Decompressor
 	decryptor    Decryptor
 }
@@ -118,7 +108,7 @@ func (z packedFileEntry) BrotliReader() (io.ReadCloser, error) {
 	return nil, errors.New("Source data is not compressed by brotli")
 }
 
-func (z *packedFileEntry) Stat() os.FileInfo {
+func (z packedFileEntry) Stat() os.FileInfo {
 	originalSize, _ := strconv.ParseInt(strings.Split(z.file.Comment[1:], "-")[0], 16, 64)
 	return &zipFileInfo{
 		name:         z.Name(),
@@ -127,12 +117,12 @@ func (z *packedFileEntry) Stat() os.FileInfo {
 	}
 }
 
-func (z *packedFileEntry) Name() string {
+func (z packedFileEntry) Name() string {
 	return path.Base(z.file.Name)
 }
 
 func (z packedFileEntry) Path() string {
-	return path.Clean("/" + path.Join(z.mountPoint, z.file.Name))
+	return z.logicalPath
 }
 
 func (z packedFileEntry) Etag() string {
@@ -145,25 +135,25 @@ type zipFileInfo struct {
 	originalSize int64
 }
 
-func (z *zipFileInfo) Name() string {
+func (z zipFileInfo) Name() string {
 	return z.name
 }
 
-func (z *zipFileInfo) Size() int64 {
+func (z zipFileInfo) Size() int64 {
 	return z.originalSize
 }
 
-func (z *zipFileInfo) Mode() os.FileMode {
+func (z zipFileInfo) Mode() os.FileMode {
 	return 0444
 }
-func (z *zipFileInfo) ModTime() time.Time {
+func (z zipFileInfo) ModTime() time.Time {
 	return z.modTime
 }
 
-func (z *zipFileInfo) IsDir() bool {
+func (z zipFileInfo) IsDir() bool {
 	return false
 }
 
-func (z *zipFileInfo) Sys() interface{} {
+func (z zipFileInfo) Sys() interface{} {
 	return nil
 }

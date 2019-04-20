@@ -14,6 +14,7 @@ type bundle interface {
 	close()
 	setDecryptionKey(key string) error
 	getName() string
+	getMountPoint() string
 }
 
 type baseBundle struct {
@@ -39,9 +40,16 @@ func (b *baseBundle) setDecryptionKey(key string) error {
 		}
 		b.decryptor = decryptor
 	case NotToEncrypto:
-		return fmt.Errorf("bundle '%s' is not encrypted", b.name)
+		if key != "" {
+			return fmt.Errorf("bundle '%s' is not encrypted", b.name)
+		}
+		return nil
 	}
 	return fmt.Errorf("bundle '%s' uses unknown encryption type", b.name)
+}
+
+func (b baseBundle) getName() string {
+	return b.name
 }
 
 func (b baseBundle) getDecryptor() (Decryptor, error) {
@@ -55,6 +63,10 @@ func (b baseBundle) getDecryptor() (Decryptor, error) {
 		b.decryptor = newNullDecryptor()
 	}
 	return b.decryptor, nil
+}
+
+func (b baseBundle) getMountPoint() string {
+	return b.mountPoint
 }
 
 type ReadCloser struct {

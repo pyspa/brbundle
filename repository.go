@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/hashicorp/golang-lru"
+	"strings"
 )
 
 type BundleType int
@@ -117,6 +118,14 @@ func (r *Repository) RegisterBundle(path string, option ...Option) error {
 	return r.registerBundle(path, option...)
 }
 
+func (r *Repository) RegisterFolder(path string, option ...Option) error {
+	return r.registerFolder(path, false, option...)
+}
+
+func (r *Repository) RegisterEncryptedFolder(path string, option ...Option) error {
+	return r.registerFolder(path, true, option...)
+}
+
 func (r *Repository) Unload(name string) error {
 	bundles := r.bundles[PackedBundleType]
 	for i, bundle := range bundles {
@@ -138,27 +147,35 @@ func (r *Repository) Unload(name string) error {
 	return fmt.Errorf("PackedBundle '%s' is not found", name)
 }
 
-func (r *Repository) Find(name string) (FileEntry, error) {
+func (r *Repository) Find(path string) (FileEntry, error) {
 	r.lazyInit()
 	if r.Cache != nil {
-		cachedBundle, ok := r.Cache.Get(name)
+		cachedBundle, ok := r.Cache.Get(path)
 		if ok {
-			return cachedBundle.(bundle).find(name)
+			return cachedBundle.(bundle).find(path)
 		}
 	}
 	for _, bundles := range r.bundles {
 		for _, bundle := range bundles {
-			fileEntry, err := bundle.find(name)
+			relPath := path
+			mountPoint := bundle.getMountPoint()
+			if bundle.getMountPoint() != "" {
+				if !strings.HasPrefix(path, mountPoint) {
+					return nil, nil
+				}
+				relPath = path[len(mountPoint)+1:]
+			}
+			fileEntry, err := bundle.find(relPath)
 			if err != nil {
 				return nil, err
 			}
 			if fileEntry != nil {
 				if r.Cache != nil {
-					r.Cache.Add(name, bundle)
+					r.Cache.Add(path, bundle)
 				}
 				return fileEntry, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("Asset '%s' is not in bundles", name)
+	return nil, fmt.Errorf("Asset '%s' is not in bundles", path)
 }

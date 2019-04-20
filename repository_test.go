@@ -76,6 +76,25 @@ func TestRegisterPackedBundleWithMountPoint(t *testing.T) {
 	}
 }
 
+func TestRepositoryFolderBundle(t *testing.T) {
+	r, err := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err = r.RegisterFolder("testdata/src-simple")
+	assert.Nil(t, err)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	f, err := r.Find("a.txt")
+	assert.NotNil(t, f)
+	if f != nil {
+		assert.Equal(t, "a.txt", f.Name())
+		assert.Equal(t, "/a.txt", f.Path())
+	}
+}
 
 var bundle_628f1de9a5dbfa77bcbe37f80bc91996 = []byte(
 	"PK\x03\x04\x14\x00\b\x00\x00\x00k\x03\x94N\x00\x00\x00\x00\x00\x00\x00\x00" +

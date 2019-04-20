@@ -25,11 +25,32 @@ func (r *Repository) registerBundle(path string, option ...Option) error {
 		return err
 	}
 	b := newPackedBundle(reader, f, bo)
+	err = b.setDecryptionKey(bo.DecryptoKey)
+	if err != nil {
+		return err
+	}
 	r.bundles[PackedBundleType] = append(r.bundles[PackedBundleType], b)
 	return nil
 }
 
-func (r *Repository) registerFolder(path string, option ...Option) error {
+func (r *Repository) registerFolder(path string, encrypted bool, option ...Option) error {
+	var bo Option
+	if len(option) > 0 {
+		bo = option[0]
+	}
+	s, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if !s.IsDir() {
+		return fmt.Errorf("path '%s' for Folder Bundle is not", path)
+	}
+	f := newFolderBundle(path, encrypted, bo)
+	err = f.setDecryptionKey(bo.DecryptoKey)
+	if err != nil {
+		return err
+	}
+	r.bundles[FolderBundleType] = append(r.bundles[FolderBundleType], f)
 	return nil
 }
 
