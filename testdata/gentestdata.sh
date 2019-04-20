@@ -28,26 +28,26 @@ popd
 mkdir testdata/raw-nocrypto
 mkdir testdata/raw-aes
 
-# content
-./cmd/brbundle/brbundle content           testdata/content-nocrypto testdata/src
-./cmd/brbundle/brbundle content -c ${KEY} testdata/content-aes      testdata/src
-
 # embedded
-./cmd/brbundle/brbundle embedded -z           -p brbundle -o testdata/result/embedded_br_no_test.go  -x brotli/noenc testdata/src
-./cmd/brbundle/brbundle embedded              -p brbundle -o testdata/result/embedded_no_no_test.go  -x lz4/noenc    testdata/src
-./cmd/brbundle/brbundle embedded -z -c ${KEY} -p brbundle -o testdata/result/embedded_br_aes_test.go -x brotli/aes   testdata/src
-./cmd/brbundle/brbundle embedded    -c ${KEY} -p brbundle -o testdata/result/embedded_no_aes_test.go -x lz4/aes      testdata/src
+./cmd/brbundle/brbundle embedded              -p brbundle -o testdata/result/embedded_br_no_test.go  -x brotli/noenc testdata/src
+./cmd/brbundle/brbundle embedded -f           -p brbundle -o testdata/result/embedded_no_no_test.go  -x lz4/noenc    testdata/src
+./cmd/brbundle/brbundle embedded    -c ${KEY} -p brbundle -o testdata/result/embedded_br_aes_test.go -x brotli/aes   testdata/src
+./cmd/brbundle/brbundle embedded -f -c ${KEY} -p brbundle -o testdata/result/embedded_no_aes_test.go -x lz4/aes      testdata/src
 
 # pack
-./cmd/brbundle/brbundle pack -z           testdata/br-noc.pb  -x brotli/noenc testdata/src
-./cmd/brbundle/brbundle pack              testdata/raw-noc.pb -x lz4/noenc    testdata/src
-./cmd/brbundle/brbundle pack -z -c ${KEY} testdata/br-aes.pb  -x brotli/aes   testdata/src
-./cmd/brbundle/brbundle pack    -c ${KEY} testdata/raw-aes.pb -x lz4/aes      testdata/src
+./cmd/brbundle/brbundle pack              testdata/br-noc.pb  -x brotli/noenc testdata/src
+./cmd/brbundle/brbundle pack -f           testdata/raw-noc.pb -x lz4/noenc    testdata/src
+./cmd/brbundle/brbundle pack    -c ${KEY} testdata/br-aes.pb  -x brotli/aes   testdata/src
+./cmd/brbundle/brbundle pack -f -c ${KEY} testdata/raw-aes.pb -x lz4/aes      testdata/src
 
 # bundle
 ./cmd/brbundle/brbundle bundle testdata/testexe/testexe.exe    testdata/src
 ./cmd/brbundle/brbundle bundle testdata/testexe/testexe.linux  testdata/src
 ./cmd/brbundle/brbundle bundle testdata/testexe/testexe.darwin testdata/src
+
+# folder (for debugging)
+./cmd/brbundle/brbundle folder           testdata/content-nocrypto testdata/src
+./cmd/brbundle/brbundle folder -c ${KEY} testdata/content-aes      testdata/src
 
 # simple data
 ./cmd/brbundle/brbundle embedded -p brbundle -o testdata/embedded_data_test_.go testdata/src-simple
