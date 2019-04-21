@@ -1,7 +1,6 @@
 .DS_Store
 .idea
 testdata/content-*
-testdata/*.pb
 testdata/testexe/testexe.darwin
 testdata/testexe/testexe.exe
 testdata/testexe/testexe.linux

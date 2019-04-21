@@ -103,7 +103,7 @@ func (c *Compressor) WriteTo(w io.Writer) (n int64, err error) {
 
 func (c Compressor) shouldUseCompressedResult(uncompressed int) bool {
 	compressed := c.Size()
-	return (uncompressed-1000 > compressed) || (uncompressed > 10000 && (int(float64(uncompressed)*0.90) > compressed))
+	return (uncompressed <= 5000 && uncompressed > compressed + 100) || (uncompressed > 5000 && (int(float64(uncompressed)*0.98) > compressed))
 }
 
 func (c Compressor) Size() int {

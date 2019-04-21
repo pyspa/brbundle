@@ -73,7 +73,7 @@ This tool supports 4 options to bundle assets:
   For debugging. You can access content files without any building tasks.
   You don't have to prepare with brbundle command except encryption is needed.
 
-## How To Load
+## How To Access Content
 
 You can get contents by using ``Find()`` function. If contents are bundled with
 embedded bundle or exe bundle, you don't have to call any function to load.
@@ -139,6 +139,55 @@ $ brbundle key-gen
 yt6TX1eCBuG9GPRl2H6SJMbPNhPLOBxEHpb4kkaWyKUDg/tAZ2aSI3A86fw=
 
 $ brbundle pack -c yt6TX1eCBuG9GPRl2H6SJMbPNhPLOBxEHpb4kkaWyKUDg/tAZ2aSI3A86fw= [src-dir]
+```
+
+## Web Application Support
+
+BRBundle support its own middleware for famous web application frameworks.
+It doesn't provide ``http.FileSystem`` compatible interface because:
+
+* It returns Brotli compressed content directly when client browser supports brotli.
+* It support fallback mechanism for [Single Page Application](https://angular.io/guide/deployment#server-configuration).
+
+### ``net/http``
+
+``"github.com/shibukawa/brbundle/brhttp"`` contains ``http.Handler`` compatible API.
+
+```go
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/brhttp"
+)
+
+// The simplest sample
+// The server only returns only brbundle's content
+// "/static/index.html" returns "index.html" of bundle.
+func main() {
+	http.ListenAndServe(":8080", brhttp.Mount("/static"))
+}
+
+// Use ServeMux to handle static assets with API handler
+func main() {
+	m := http.NewServeMux()
+	// First parameter of "Handle()" method and "Mount()" function
+	// are almost same, but "Handle()" one needs trailing slash "/"
+	m.Handle("/public/", brhttp.Mount("/public"))
+	m.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello World")
+	})
+	http.ListenAndServe(":8080", m)
+}
+
+// Single Page Application supports is configured by second parameter
+// If no contents found in bundles, it returns the specified content
+func main() {
+	http.ListenAndServe(":8080", brhttp.Mount("/static", brbundle.WebOption{
+		SPAFallback: "index.html",
+	}))
+}
 ```
 
 ## Internal Design
