@@ -13,10 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var repo *brbundle.Repository
-
-func init() {
-	r, _ := brbundle.NewRepository(brbundle.ROption{
+func initRepo() *brbundle.Repository {
+	r := brbundle.NewRepository(brbundle.ROption{
 		OmitEnvVarFolderBundle: true,
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     true,
@@ -25,14 +23,18 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	repo = r
+	return r
 }
 
-func TestNewFileSystem_NoBrotli(t *testing.T) {
+func TestMount_NoBrotli(t *testing.T) {
+	repo := initRepo()
 	m := http.NewServeMux()
-	m.Handle("/static/", brhttp.Mount("/static", brbundle.WebOption{
-		Repository: repo,
-	}))
+	m.Handle("/static/",
+		http.StripPrefix("/static",
+			brhttp.Mount(brbundle.WebOption{
+				Repository: repo,
+			}),
+		))
 	s := httptest.NewServer(m)
 	defer s.Close()
 
@@ -46,11 +48,15 @@ func TestNewFileSystem_NoBrotli(t *testing.T) {
 	assert.True(t, strings.HasPrefix(string(body), "hello world from root\n"))
 }
 
-func TestNewFileSystem_Brotli(t *testing.T) {
+func TestMount_Brotli(t *testing.T) {
+	repo := initRepo()
 	m := http.NewServeMux()
-	m.Handle("/static/", brhttp.Mount("/static", brbundle.WebOption{
-		Repository: repo,
-	}))
+	m.Handle("/static/",
+		http.StripPrefix("/static",
+			brhttp.Mount(brbundle.WebOption{
+				Repository: repo,
+			}),
+		))
 	s := httptest.NewServer(m)
 	defer s.Close()
 
@@ -70,13 +76,14 @@ func TestNewFileSystem_Brotli(t *testing.T) {
 	assert.True(t, strings.HasPrefix(string(body), "hello world from root\n"))
 }
 
-func TestNewFileSystemWithoutServeMux(t *testing.T) {
-	s := httptest.NewServer(brhttp.Mount("/static", brbundle.WebOption{
+func TestMountWithoutServeMux(t *testing.T) {
+	repo := initRepo()
+	s := httptest.NewServer(brhttp.Mount(brbundle.WebOption{
 		Repository: repo,
 	}))
 	defer s.Close()
 
-	res, err := http.Get(s.URL + "/static/rootfile.txt")
+	res, err := http.Get(s.URL + "/rootfile.txt")
 	assert.Equal(t, nil, err)
 
 	defer res.Body.Close()
@@ -85,10 +92,11 @@ func TestNewFileSystemWithoutServeMux(t *testing.T) {
 	assert.True(t, strings.HasPrefix(string(body), "hello world from root\n"))
 }
 
-func TestNewFileSystemSPAOption(t *testing.T) {
+func TestMountSPAOption(t *testing.T) {
+	repo := initRepo()
 	// fallback to index.html
-	s := httptest.NewServer(brhttp.Mount("/static", brbundle.WebOption{
-		Repository: repo,
+	s := httptest.NewServer(brhttp.Mount(brbundle.WebOption{
+		Repository:  repo,
 		SPAFallback: "index.html",
 	}))
 	defer s.Close()

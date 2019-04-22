@@ -28,10 +28,9 @@ type ROption struct {
 	OmitExeBundle          bool
 	OmitEmbeddedBundle     bool
 	OmitEnvVarFolderBundle bool
-	CacheSize              int
 }
 
-func NewRepository(option ...ROption) (*Repository, error) {
+func NewRepository(option ...ROption) *Repository {
 	rOption := &ROption{}
 	if len(option) > 0 {
 		rOption = &option[0]
@@ -39,14 +38,16 @@ func NewRepository(option ...ROption) (*Repository, error) {
 	r := &Repository{
 		option: rOption,
 	}
-	if rOption.CacheSize > 0 {
-		cache, err := lru.New2Q(rOption.CacheSize)
-		if err != nil {
-			return nil, err
-		}
-		r.Cache = cache
+	return r
+}
+
+func (r *Repository) SetCacheSize(size int) error {
+	cache, err := lru.New2Q(size)
+	if err != nil {
+		return err
 	}
-	return r, nil
+	r.Cache = cache
+	return nil
 }
 
 func (r *Repository) lazyInit() {
@@ -62,6 +63,7 @@ func (r *Repository) lazyInit() {
 	if !r.option.OmitEnvVarFolderBundle {
 		r.initFolderBundleByEnvVar()
 	}
+	r.init = true
 }
 
 func (r *Repository) setDecryptoKey(name, key string, bundleType BundleType) error {
@@ -115,15 +117,36 @@ type Option struct {
 }
 
 func (r *Repository) RegisterBundle(path string, option ...Option) error {
-	return r.registerBundle(path, option...)
+	var bo Option
+	if len(option) > 0 {
+		bo = option[0]
+	}
+	if bo.Name == "" {
+		bo.Name = path
+	}
+	return r.registerBundle(path, bo)
 }
 
 func (r *Repository) RegisterFolder(path string, option ...Option) error {
-	return r.registerFolder(path, false, option...)
+	var bo Option
+	if len(option) > 0 {
+		bo = option[0]
+	}
+	if bo.Name == "" {
+		bo.Name = path
+	}
+	return r.registerFolder(path, false, bo)
 }
 
 func (r *Repository) RegisterEncryptedFolder(path string, option ...Option) error {
-	return r.registerFolder(path, true, option...)
+	var bo Option
+	if len(option) > 0 {
+		bo = option[0]
+	}
+	if bo.Name == "" {
+		bo.Name = path
+	}
+	return r.registerFolder(path, true, bo)
 }
 
 func (r *Repository) Unload(name string) error {

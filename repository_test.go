@@ -8,7 +8,7 @@ import (
 )
 
 func TestRegisterEmbeddedBundle(t *testing.T) {
-	r, err := NewRepository(ROption{
+	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     false,
@@ -27,12 +27,12 @@ func TestRegisterEmbeddedBundle(t *testing.T) {
 }
 
 func TestRegisterPackedBundle(t *testing.T) {
-	r, err := NewRepository(ROption{
+	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     true,
 	})
-	err = r.RegisterBundle("testdata/simple.pb")
+	err := r.RegisterBundle("testdata/simple.pb")
 	assert.Nil(t, err)
 	if err != nil {
 		t.Log(err)
@@ -49,12 +49,12 @@ func TestRegisterPackedBundle(t *testing.T) {
 }
 
 func TestRegisterPackedBundleWithMountPoint(t *testing.T) {
-	r, err := NewRepository(ROption{
+	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     true,
 	})
-	err = r.RegisterBundle("testdata/simple.pb", Option{
+	err := r.RegisterBundle("testdata/simple.pb", Option{
 		MountPoint: "dir",
 	})
 	assert.Nil(t, err)
@@ -77,12 +77,12 @@ func TestRegisterPackedBundleWithMountPoint(t *testing.T) {
 }
 
 func TestRepositoryFolderBundle(t *testing.T) {
-	r, err := NewRepository(ROption{
+	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     true,
 	})
-	err = r.RegisterFolder("testdata/src-simple")
+	err := r.RegisterFolder("testdata/src-simple")
 	assert.Nil(t, err)
 	if err != nil {
 		t.Log(err)
@@ -94,6 +94,63 @@ func TestRepositoryFolderBundle(t *testing.T) {
 		assert.Equal(t, "a.txt", f.Name())
 		assert.Equal(t, "/a.txt", f.Path())
 	}
+}
+
+func TestRepositoryCache(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     false,
+	})
+	r.SetCacheSize(100)
+	f, err := r.Find("a.txt")
+	assert.Nil(t, err)
+	assert.NotNil(t, f)
+
+	// white box test
+	r.bundles[EmbeddedBundleType] = nil
+
+	// return content from cache
+	f2, err := r.Find("a.txt")
+	assert.Nil(t, err)
+	assert.NotNil(t, f2)
+	if f2 != nil {
+		reader, err := f2.Reader()
+		assert.Nil(t, err)
+		b, err := ioutil.ReadAll(reader)
+		assert.Nil(t, err)
+		assert.Equal(t, "hello world", string(b))
+	}
+
+	// now cache is empty
+	r.ClearCache()
+	f3, _ := r.Find("a.txt")
+	assert.Nil(t, f3)
+}
+
+func TestRegisterUnload(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	r.SetCacheSize(100)
+	err := r.RegisterBundle("testdata/simple.pb")
+	assert.Nil(t, err)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	f, err := r.Find("b.txt")
+
+	assert.Nil(t, err)
+	assert.NotNil(t, f)
+
+	// Unload removes cache too
+	r.Unload("testdata/simple.pb")
+
+	f2, _ := r.Find("b.txt")
+	assert.Nil(t, f2)
 }
 
 var bundle_628f1de9a5dbfa77bcbe37f80bc91996 = []byte(

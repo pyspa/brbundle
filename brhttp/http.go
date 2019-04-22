@@ -4,20 +4,16 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
 	"github.com/shibukawa/brbundle"
 )
 
 type FileSystem struct {
-	path   string
 	option brbundle.WebOption
 }
 
 func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	newPath := strings.TrimPrefix(r.URL.Path, f.path)
-	if newPath == r.URL.Path {
-		w.WriteHeader(404)
-		return
-	}
+	newPath := r.URL.Path
 
 	if strings.HasPrefix(newPath, "/") {
 		newPath = newPath[1:]
@@ -39,27 +35,25 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	brreader, err := file.BrotliReader()
 	if brreader != nil && brbundle.HasSupportBrotli(r.Header.Get("Accept-Encoding")) {
 		w.Header().Set("Content-Encoding", "br")
-		defer brreader.Close()
 		if err != nil {
 			w.WriteHeader(500)
 			return
 		}
+		defer brreader.Close()
 		io.Copy(w, brreader)
 	} else {
 		reader, err := file.Reader()
-		defer reader.Close()
 		if err != nil {
 			w.WriteHeader(500)
 			return
 		}
+		defer reader.Close()
 		io.Copy(w, reader)
 	}
 }
 
-func Mount(path string, option ...brbundle.WebOption) *FileSystem {
-	fs := &FileSystem{
-		path:   path,
-	}
+func Mount(option ...brbundle.WebOption) *FileSystem {
+	fs := &FileSystem{}
 	if len(option) > 0 {
 		fs.option = option[0]
 	}

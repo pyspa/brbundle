@@ -1,6 +1,6 @@
 package brbundle
 
-var DefaultRepository, _ = NewRepository()
+var DefaultRepository = NewRepository()
 
 func SetDecryptoKeyToEmbeddedBundle(name, key string) error {
 	return DefaultRepository.SetDecryptoKeyToEmbeddedBundle(name, key)

@@ -9,11 +9,7 @@ import (
 	"os"
 )
 
-func (r *Repository) registerBundle(path string, option ...Option) error {
-	var bo Option
-	if len(option) > 0 {
-		bo = option[0]
-	}
+func (r *Repository) registerBundle(path string, option Option) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -24,8 +20,8 @@ func (r *Repository) registerBundle(path string, option ...Option) error {
 		fmt.Println(err)
 		return err
 	}
-	b := newPackedBundle(reader, f, bo)
-	err = b.setDecryptionKey(bo.DecryptoKey)
+	b := newPackedBundle(reader, f, option)
+	err = b.setDecryptionKey(option.DecryptoKey)
 	if err != nil {
 		return err
 	}
@@ -33,11 +29,7 @@ func (r *Repository) registerBundle(path string, option ...Option) error {
 	return nil
 }
 
-func (r *Repository) registerFolder(path string, encrypted bool, option ...Option) error {
-	var bo Option
-	if len(option) > 0 {
-		bo = option[0]
-	}
+func (r *Repository) registerFolder(path string, encrypted bool, option Option) error {
 	s, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -45,8 +37,8 @@ func (r *Repository) registerFolder(path string, encrypted bool, option ...Optio
 	if !s.IsDir() {
 		return fmt.Errorf("path '%s' for Folder Bundle is not", path)
 	}
-	f := newFolderBundle(path, encrypted, bo)
-	err = f.setDecryptionKey(bo.DecryptoKey)
+	f := newFolderBundle(path, encrypted, option)
+	err = f.setDecryptionKey(option.DecryptoKey)
 	if err != nil {
 		return err
 	}

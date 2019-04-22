@@ -57,4 +57,3 @@ type WebOption struct {
 	Repository  *Repository
 	SPAFallback string
 }
-
