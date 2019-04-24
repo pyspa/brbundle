@@ -154,6 +154,8 @@ It doesn't provide ``http.FileSystem`` compatible interface because:
 ``"github.com/shibukawa/brbundle/brhttp"`` contains ``http.Handler`` compatible API.
 
 ```go
+package main
+
 import (
 	"fmt"
 	"net/http"
@@ -166,29 +168,105 @@ import (
 // The server only returns only brbundle's content
 // "/static/index.html" returns "index.html" of bundle.
 func main() {
-	http.ListenAndServe(":8080", brhttp.Mount("/static"))
+	fmt.Println("Listening at :8080")
+	http.ListenAndServe(":8080", brhttp.Mount())
 }
 
-// Use ServeMux to handle static assets with API handler
+// Use ServeMux sample to handle static assets with API handler
 func main() {
 	m := http.NewServeMux()
-	// First parameter of "Handle()" method and "Mount()" function
-	// are almost same, but "Handle()" one needs trailing slash "/"
-	m.Handle("/public/", brhttp.Mount("/public"))
+	m.Handle("/public/", http.StripPrefix("/public", brhttp.Mount()))
 	m.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello World")
 	})
+	fmt.Println("Listening at :8080")
 	http.ListenAndServe(":8080", m)
 }
 
-// Single Page Application supports is configured by second parameter
-// If no contents found in bundles, it returns the specified content
+// Single Page Application sample
+// BRBundle's SPA supports is configured by WebOption of Mount() function
+// If no contents found in bundles, it returns the specified content.
 func main() {
-	http.ListenAndServe(":8080", brhttp.Mount("/static", brbundle.WebOption{
-		SPAFallback: "index.html",
-	}))
+	m := http.NewServeMux()
+	m.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello World")
+	})
+	// Single Page Application is usually served index.html at any location
+	// and routing errors are handled at browser.
+	//
+	// You should mount at the last line, because
+	// it consumes all URL requests.
+	m.Handle("/",
+        brhttp.Mount(brbundle.WebOption{
+            SPAFallback: "index.html",
+        }),
+	)
+	fmt.Println("Listening at :8080")
+	http.ListenAndServe(":8080", m)
 }
 ```
+
+### Echo
+
+[Echo](https://echo.labstack.com/) is a high performance, extensible, minimalist Go web framework.
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/labstack/echo"
+	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/brecho"
+)
+
+// The simplest sample
+func main() {
+    e := echo.New()
+	// Asterisk is required!
+    e.GET("/*", brecho.Mount())
+    e.Logger.Fatal(e.Start(":1323"))
+}
+
+// Use with echo.Group 
+func main() {
+	e := echo.New()
+    e.GET("/api/status", func (c echo.Context) error {
+        return c.String(http.StatusOK, "Hello, World!")
+    })
+	g := e.Group("/assets")
+	// Asterisk is required!
+	g.GET("/*", brecho.Mount())
+	e.Logger.Fatal(e.Start(":1323"))
+}
+
+// Single Page Application sample
+// BRBundle's SPA supports is configured by WebOption of Mount() function
+// If no contents found in bundles, it returns the specified content.
+//
+// Single Page Application is usually served index.html at any location
+// and routing errors are handled at browser.
+func main() {
+	e := echo.New()
+	e.GET("/api/status", func (c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+	// Use brbundle as an error handler
+	echo.NotFoundHandler = brecho.Mount(brbundle.WebOption{
+		SPAFallback: "index.html",
+	})
+	e.Logger.Fatal(e.Start(":1323"))
+}
+```
+
+### Chi Router
+
+[Chi router](https://github.com/go-chi/chi) is a lightweight, idiomatic and
+composable router for building Go HTTP services.
+
+
 
 ## Internal Design
 

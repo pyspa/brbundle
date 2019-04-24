@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
-	"github.com/shibukawa/brbundle"
 	"io"
 	"os"
 	"os/exec"
+
+	"github.com/shibukawa/brbundle"
 )
 
 type Compressor struct {
@@ -47,7 +48,7 @@ func (c *Compressor) Init() {
 func (c *Compressor) Compress(srcPath string, size int) (err error) {
 	src, err := os.Open(srcPath)
 	if err != nil {
-		return err
+		return
 	}
 	defer src.Close()
 
@@ -74,7 +75,6 @@ func (c *Compressor) Compress(srcPath string, size int) (err error) {
 		c.skipCompress = !c.shouldUseCompressedResult(size)
 		if c.skipCompress {
 			src, _ := os.Open(srcPath)
-			defer src.Close()
 			c.result.Reset()
 			io.Copy(c.result, src)
 		}

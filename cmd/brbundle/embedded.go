@@ -96,6 +96,8 @@ func splitByte(src []byte, length int) []string {
 		}
 		if str[i:i+2] == `\x` {
 			i += 3
+		} else if str[i:i+2] == `\u` {
+			i += 5
 		} else if str[i:i+1] == `\` {
 			i += 1
 		}

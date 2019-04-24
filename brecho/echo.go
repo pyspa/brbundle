@@ -1,7 +1,9 @@
 package brecho
 
 import (
+	"github.com/shibukawa/brbundle/websupport"
 	"io"
+	"net/url"
 	"strings"
 
 	"github.com/labstack/echo"
@@ -9,50 +11,41 @@ import (
 )
 
 func Mount(option ...brbundle.WebOption) func(echo.Context) error {
-	var o brbundle.WebOption
-	if len(option) > 0 {
-		o = option[0]
-	}
-	if o.Repository == nil {
-		o.Repository = brbundle.DefaultRepository
-	}
-
+	o := websupport.InitOption(option)
 	return func(c echo.Context) error {
-		newPath := c.Path()
-
-		if strings.HasPrefix(newPath, "/") {
-			newPath = newPath[1:]
+		var err error
+		p := c.Request().URL.Path
+		if strings.HasSuffix(c.Path(), "*") { // When serving from a group, e.g. `/static*`.
+			p = c.Param("*")
 		}
-
-		file, err := o.Repository.Find(newPath)
+		p, err = url.PathUnescape(p)
 		if err != nil {
-			if o.SPAFallback != "" {
-				file, err = o.Repository.Find(o.SPAFallback)
-				if err != nil {
-					return echo.ErrNotFound
-				}
-			} else {
-				return echo.ErrNotFound
-			}
+			return err
 		}
 
-		brreader, err := file.BrotliReader()
-		if brreader != nil && brbundle.HasSupportBrotli(c.Request().Header.Get("Accept-Encoding")) {
-			reader, err := file.BrotliReader()
-			c.Response().Header().Set("Content-Encoding", "br")
-			if err != nil {
-				return echo.NewHTTPError(500, "Internal Server Error")
-			}
-			defer reader.Close()
-			io.Copy(c.Response(), reader)
+		file, found, redirectDir := websupport.FindFile(p, o)
+		if redirectDir {
+			return c.Redirect(301, "./")
+		} else if !found {
+			return echo.ErrNotFound
+		}
+
+		reader, etag, headers, err := websupport.GetContent(file, o, c.Request().Header.Get("Accept-Encoding"))
+		if err != nil {
+			return echo.NewHTTPError(500, "Internal Server Error")
+		}
+		defer reader.Close()
+		wHeaders := c.Response().Header()
+		for _, header := range headers {
+			wHeaders.Set(header[0], header[1])
+		}
+		if c.Request().Header.Get("If-None-Match") == etag {
+			c.NoContent(304)
 		} else {
-			reader, err := file.Reader()
-			if err != nil {
-				return echo.NewHTTPError(500, "Internal Server Error")
-			}
 			defer reader.Close()
 			io.Copy(c.Response(), reader)
 		}
 		return nil
 	}
 }
+

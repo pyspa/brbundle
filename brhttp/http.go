@@ -3,9 +3,9 @@ package brhttp
 import (
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/websupport"
 )
 
 type FileSystem struct {
@@ -13,52 +13,42 @@ type FileSystem struct {
 }
 
 func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	newPath := r.URL.Path
+	p := r.URL.Path
 
-	if strings.HasPrefix(newPath, "/") {
-		newPath = newPath[1:]
+	file, found, redirectDir := websupport.FindFile(p, f.option)
+	if redirectDir {
+		http.Redirect(w, r, "./", http.StatusFound)
+		return
+	} else if !found {
+		w.WriteHeader(404)
+		return
 	}
 
-	file, err := f.option.Repository.Find(newPath)
+	reader, etag, headers, err := websupport.GetContent(file, f.option, r.Header.Get("Accept-Encoding"))
 	if err != nil {
-		if f.option.SPAFallback != "" {
-			file, err = f.option.Repository.Find(f.option.SPAFallback)
-			if err != nil {
-				w.WriteHeader(404)
-				return
-			}
-		} else {
-			w.WriteHeader(404)
-			return
-		}
+		w.WriteHeader(500)
 	}
-	brreader, err := file.BrotliReader()
-	if brreader != nil && brbundle.HasSupportBrotli(r.Header.Get("Accept-Encoding")) {
-		w.Header().Set("Content-Encoding", "br")
-		if err != nil {
-			w.WriteHeader(500)
-			return
-		}
-		defer brreader.Close()
-		io.Copy(w, brreader)
+	defer reader.Close()
+
+	for _, header := range headers {
+		w.Header().Set(header[0], header[1])
+	}
+	if r.Header.Get("If-None-Match") == etag {
+		w.WriteHeader(304)
+		return
 	} else {
-		reader, err := file.Reader()
-		if err != nil {
-			w.WriteHeader(500)
-			return
-		}
 		defer reader.Close()
 		io.Copy(w, reader)
 	}
 }
 
 func Mount(option ...brbundle.WebOption) *FileSystem {
-	fs := &FileSystem{}
-	if len(option) > 0 {
-		fs.option = option[0]
+	return &FileSystem{
+		option: websupport.InitOption(option),
 	}
-	if fs.option.Repository == nil {
-		fs.option.Repository = brbundle.DefaultRepository
-	}
-	return fs
+}
+
+func MountFunc(option ...brbundle.WebOption) http.HandlerFunc {
+	fs := Mount(option...)
+	return fs.ServeHTTP
 }

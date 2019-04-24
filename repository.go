@@ -184,13 +184,13 @@ func (r *Repository) Find(path string) (FileEntry, error) {
 			mountPoint := bundle.getMountPoint()
 			if bundle.getMountPoint() != "" {
 				if !strings.HasPrefix(path, mountPoint) {
-					return nil, nil
+					continue
 				}
-				relPath = path[len(mountPoint)+1:]
+				relPath = path[len(mountPoint):]
 			}
 			fileEntry, err := bundle.find(relPath)
 			if err != nil {
-				return nil, err
+				continue
 			}
 			if fileEntry != nil {
 				if r.Cache != nil {

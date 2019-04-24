@@ -3,10 +3,12 @@ package brbundle
 import (
 	"errors"
 	"fmt"
+	"github.com/gabriel-vasile/mimetype"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 type folderBundle struct {
@@ -19,9 +21,13 @@ func newFolderBundle(rootFolder string, encrypted bool, option Option) *folderBu
 	if encrypted {
 		decryptorType = UseAES
 	}
+	mountPoint := option.MountPoint
+	if mountPoint != "" && !strings.HasSuffix(mountPoint, "/") {
+		mountPoint = mountPoint + "/"
+	}
 	return &folderBundle{
 		baseBundle: baseBundle{
-			mountPoint:    option.MountPoint,
+			mountPoint:    mountPoint,
 			name:          option.Name,
 			decryptorType: decryptorType,
 		},
@@ -59,6 +65,7 @@ type folderFileEntry struct {
 	filePath    string
 	info        os.FileInfo
 	logicalPath string
+	contentType string
 	decryptor   Decryptor
 }
 
@@ -78,6 +85,10 @@ func (f folderFileEntry) BrotliReader() (io.ReadCloser, error) {
 	return nil, errors.New("Source data is not compressed by brotli")
 }
 
+func (f folderFileEntry) CompressedSize() int64 {
+	return -1
+}
+
 func (f folderFileEntry) Stat() os.FileInfo {
 	return f.info
 }
@@ -90,7 +101,10 @@ func (f folderFileEntry) Path() string {
 	return f.logicalPath
 }
 
-func (f folderFileEntry) Etag() string {
+func (f *folderFileEntry) EtagAndContentType() (string, string) {
 	size := int(f.info.Size())
-	return fmt.Sprintf("%x-%x", size, f.info.ModTime().Unix())
+	if f.contentType == "" {
+		f.contentType, _, _ = mimetype.DetectFile(f.filePath)
+	}
+	return fmt.Sprintf("%x-%x", size, f.info.ModTime().Unix()), f.contentType
 }

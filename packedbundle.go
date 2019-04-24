@@ -22,9 +22,13 @@ func newPackedBundle(reader *zip.Reader, closer io.Closer, option Option) *packe
 	sort.Slice(reader.File, func(i, j int) bool {
 		return reader.File[i].Name < reader.File[j].Name
 	})
+	mountPoint := option.MountPoint
+	if mountPoint != "" && !strings.HasSuffix(mountPoint, "/") {
+		mountPoint = mountPoint + "/"
+	}
 	result := &packedBundle{
 		baseBundle: baseBundle{
-			mountPoint:    option.MountPoint,
+			mountPoint:    mountPoint,
 			name:          option.Name,
 			decryptorType: reader.Comment[:1],
 		},
@@ -81,25 +85,25 @@ type packedFileEntry struct {
 	decryptor    Decryptor
 }
 
-func (z packedFileEntry) Reader() (io.ReadCloser, error) {
-	reader, err := z.file.Open()
+func (p packedFileEntry) Reader() (io.ReadCloser, error) {
+	reader, err := p.file.Open()
 	if err != nil {
 		return nil, err
 	}
-	decryptoReader, err := z.decryptor.Decrypto(reader)
+	decryptoReader, err := p.decryptor.Decrypto(reader)
 	if err != nil {
 		return nil, err
 	}
-	return NewReadCloser(z.decompressor(decryptoReader), reader), nil
+	return NewReadCloser(p.decompressor(decryptoReader), reader), nil
 }
 
-func (z packedFileEntry) BrotliReader() (io.ReadCloser, error) {
-	if z.file.Comment[0:1] == UseBrotli {
-		reader, err := z.file.Open()
+func (p packedFileEntry) BrotliReader() (io.ReadCloser, error) {
+	if p.file.Comment[0:1] == UseBrotli {
+		reader, err := p.file.Open()
 		if err != nil {
 			return nil, err
 		}
-		decryptoReader, err := z.decryptor.Decrypto(reader)
+		decryptoReader, err := p.decryptor.Decrypto(reader)
 		if err != nil {
 			return nil, err
 		}
@@ -108,25 +112,34 @@ func (z packedFileEntry) BrotliReader() (io.ReadCloser, error) {
 	return nil, errors.New("Source data is not compressed by brotli")
 }
 
-func (z packedFileEntry) Stat() os.FileInfo {
-	originalSize, _ := strconv.ParseInt(strings.Split(z.file.Comment[1:], "-")[0], 16, 64)
+func (p packedFileEntry) CompressedSize() int64 {
+	if p.file.Comment[0:1] == UseBrotli {
+		return int64(p.file.CompressedSize64)
+	}
+	return -1
+}
+
+func (p packedFileEntry) Stat() os.FileInfo {
+	_, etag, _ := ParseCommentString(p.file.Comment)
+	originalSize, _ := strconv.ParseInt(etag, 16, 64)
 	return &zipFileInfo{
-		name:         z.Name(),
-		modTime:      z.file.Modified,
+		name:         p.Name(),
+		modTime:      p.file.Modified,
 		originalSize: originalSize,
 	}
 }
 
-func (z packedFileEntry) Name() string {
-	return path.Base(z.file.Name)
+func (p packedFileEntry) Name() string {
+	return path.Base(p.file.Name)
 }
 
-func (z packedFileEntry) Path() string {
-	return z.logicalPath
+func (p packedFileEntry) Path() string {
+	return p.logicalPath
 }
 
-func (z packedFileEntry) Etag() string {
-	return z.file.Comment[1:]
+func (p packedFileEntry) EtagAndContentType() (string, string) {
+	_, etag, contentType := ParseCommentString(p.file.Comment)
+	return etag, contentType
 }
 
 type zipFileInfo struct {

@@ -1,6 +1,7 @@
 package brbundle_test
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -95,10 +96,20 @@ func TestMountWithoutServeMux(t *testing.T) {
 func TestMountSPAOption(t *testing.T) {
 	repo := initRepo()
 	// fallback to index.html
-	s := httptest.NewServer(brhttp.Mount(brbundle.WebOption{
+
+	m := http.NewServeMux()
+
+	m.HandleFunc("/api", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		io.WriteString(w, `{"status": "ok"}`)
+	}))
+	m.Handle("/", brhttp.Mount(brbundle.WebOption{
 		Repository:  repo,
 		SPAFallback: "index.html",
 	}))
+
+
+	s := httptest.NewServer(m)
 	defer s.Close()
 
 	res, err := http.Get(s.URL + "/static/profile")
@@ -108,4 +119,9 @@ func TestMountSPAOption(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.Equal(t, nil, err)
 	assert.True(t, strings.Contains(string(body), "<body>"))
+
+	res2, err := http.Get(s.URL + "/api")
+	assert.Nil(t, err)
+	assert.Equal(t, 200, res2.StatusCode)
+
 }

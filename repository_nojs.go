@@ -56,7 +56,9 @@ func (r *Repository) initExeBundle() error {
 		return err
 	}
 	reader, closer, err := zipsection.Open(filepath)
-	b := newPackedBundle(reader, closer, Option{})
-	r.bundles[ExeBundleType] = append(r.bundles[ExeBundleType], b)
+	if err == nil {
+		b := newPackedBundle(reader, closer, Option{})
+		r.bundles[ExeBundleType] = append(r.bundles[ExeBundleType], b)
+	}
 	return nil
 }

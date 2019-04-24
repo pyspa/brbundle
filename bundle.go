@@ -96,7 +96,8 @@ type FileEntry interface {
 	Reader() (io.ReadCloser, error)
 	BrotliReader() (io.ReadCloser, error)
 	Stat() os.FileInfo
+	CompressedSize() int64
 	Name() string
 	Path() string
-	Etag() string
+	EtagAndContentType() (string, string)
 }
