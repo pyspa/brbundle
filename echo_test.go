@@ -66,7 +66,7 @@ func TestEchoMount_SPAOption(t *testing.T) {
 	e := echo.New()
 
 	handler := brecho.Mount(brbundle.WebOption{
-		Repository: repo,
+		Repository:  repo,
 		SPAFallback: "index.html",
 	})
 

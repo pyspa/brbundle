@@ -108,7 +108,6 @@ func TestMountSPAOption(t *testing.T) {
 		SPAFallback: "index.html",
 	}))
 
-
 	s := httptest.NewServer(m)
 	defer s.Close()
 

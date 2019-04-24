@@ -19,4 +19,3 @@ func ParseCommentString(comment string) (compressorFlag, etag, contentType strin
 	contentType = result[2]
 	return
 }
-

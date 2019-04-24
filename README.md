@@ -253,7 +253,7 @@ func main() {
 	e.GET("/api/status", func (c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-	// Use brbundle as an error handler
+	// Use brbundle works as an error handler
 	echo.NotFoundHandler = brecho.Mount(brbundle.WebOption{
 		SPAFallback: "index.html",
 	})
@@ -266,7 +266,111 @@ func main() {
 [Chi router](https://github.com/go-chi/chi) is a lightweight, idiomatic and
 composable router for building Go HTTP services.
 
+```go
+package main
 
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/go-chi/chi"
+	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/brchi"
+)
+
+// Use with chi.Router
+func main() {
+	r := chi.NewRouter()
+	fmt.Println("You can access index.html at /public/index.html")
+	// Asterisk is required!
+	r.Get("/public/*", brchi.Mount())
+	r.Get("/api", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello World")
+	})
+	fmt.Println("Listening at :8080")
+	http.ListenAndServe(":8080", r)
+}
+
+// Single Page Application sample
+// BRBundle's SPA supports is configured by WebOption of Mount() function
+// If no contents found in bundles, it returns the specified content.
+//
+// Single Page Application is usually served index.html at any location
+// and routing errors are handled at browser.
+func main() {
+	r := chi.NewRouter()
+	r.Get("/api/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello World")
+	})
+	fmt.Println("You can access index.html at any location")
+	// Use brbundle as an error handler
+	r.NotFound(brchi.Mount(brbundle.WebOption{
+		SPAFallback: "index.html",
+	}))
+	fmt.Println("Listening at :8080")
+	http.ListenAndServe(":8080", r)
+}
+```
+
+### fasthttp / fasthttprouter
+
+[fasthttp](https://github.com/valyala/fasthttp) is a fast http package.
+[fasthttprouter](https://github.com/buaazp/fasthttprouter) is a high performance request router that scales well for fasthttp.
+
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/buaazp/fasthttprouter"
+	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/brfasthttp"
+	"github.com/valyala/fasthttp"
+)
+
+// The simplest sample
+func main() {
+	fmt.Println("Listening at :8080")
+	fmt.Println("You can access index.html at /index.html")
+	fasthttp.ListenAndServe(":8080", brfasthttp.Mount())
+}
+
+// Use with fasthttprouter
+func main() {
+	r := fasthttprouter.New()
+	r.GET("/api/status", func (ctx *fasthttp.RequestCtx) {
+		ctx.WriteString("Hello, World!")
+	})
+	// "*filepath" is required at the last fragment of path string
+	fmt.Println("You can access index.html at /static/index.html")
+	r.GET("/static/*filepath", brfasthttp.Mount())
+
+	fmt.Println("Listening at :8080")
+	fasthttp.ListenAndServe(":8080", r.Handler)
+}
+
+// Single Page Application sample
+// BRBundle's SPA supports is configured by WebOption of Mount() function
+// If no contents found in bundles, it returns the specified content.
+//
+// Single Page Application is usually served index.html at any location
+// and routing errors are handled at browser.
+func main() {
+	r := fasthttprouter.New()
+	r.GET("/api/status", func (ctx *fasthttp.RequestCtx) {
+		ctx.WriteString("Hello, World!")
+	})
+	fmt.Println("You can access index.html at any location")
+	// Use brbundle works as an error handler
+	r.NotFound = brfasthttp.Mount(brbundle.WebOption{
+		SPAFallback: "index.html",
+	})
+	fmt.Println("Listening at :8080")
+	fasthttp.ListenAndServe(":8080", r.Handler)
+}
+```
 
 ## Internal Design
 

@@ -4,6 +4,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/araddon/dateparse v0.0.0-20190329160016-74dc0e29b01f
+	github.com/buaazp/fasthttprouter v0.1.1
 	github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
 	github.com/fatih/color v1.7.0
 	github.com/gabriel-vasile/mimetype v0.3.3
@@ -19,7 +20,7 @@ require (
 	github.com/shibukawa/zipsection v0.0.0-20180410220334-96c656c9b295
 	github.com/simplereach/timeutils v1.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.2.0
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2 // indirect
 	golang.org/x/sys v0.0.0-20190219203350-90b0e4468f99 // indirect

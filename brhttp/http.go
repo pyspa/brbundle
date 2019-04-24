@@ -20,13 +20,13 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "./", http.StatusFound)
 		return
 	} else if !found {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	reader, etag, headers, err := websupport.GetContent(file, f.option, r.Header.Get("Accept-Encoding"))
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	defer reader.Close()
 
@@ -34,7 +34,7 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(header[0], header[1])
 	}
 	if r.Header.Get("If-None-Match") == etag {
-		w.WriteHeader(304)
+		w.WriteHeader(http.StatusNotModified)
 		return
 	} else {
 		defer reader.Close()
