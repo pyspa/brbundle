@@ -372,6 +372,60 @@ func main() {
 }
 ```
 
+### Gin
+
+[Gin](https://gin-gonic.com/) is a HTTP web framework written in Go (Golang).
+It features a Martini-like API with much better performance -- up to 40 times faster. 
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/brgin"
+)
+
+// Use with gin's router
+func main() {
+    r := gin.Default()
+    r.GET("/api/status", func(c *gin.Context) {
+        c.JSON(http.StatusOK, gin.H{
+            "status": "ok",
+        })
+    })
+    fmt.Println("You can access index.html at /static/index.html")
+	// "*filepath" is required at the last fragment of path string
+    r.GET("/static/*filepath", brgin.Mount())
+    r.Run(":8080")
+}
+
+// Single Page Application sample
+// BRBundle's SPA supports is configured by WebOption of Mount() function
+// If no contents found in bundles, it returns the specified content.
+//
+// Single Page Application is usually served index.html at any location
+// and routing errors are handled at browser.
+func main() {
+	r := gin.Default()
+    r.GET("/api/status", func(c *gin.Context) {
+        c.JSON(http.StatusOK, gin.H{
+            "status": "ok",
+        })
+    })
+	fmt.Println("You can access index.html at any location")
+	// Use brbundle works as an error handler
+	r.NoRoute(brgin.Mount(brbundle.WebOption{
+		SPAFallback: "index.html",
+	}))
+	fmt.Println("Listening at :8080")
+	r.Run(":8080")
+}
+```
+
 ## Internal Design
 
 ### File Format
