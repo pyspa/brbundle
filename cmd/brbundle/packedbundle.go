@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"errors"
+	"github.com/shibukawa/brbundle"
 	"io"
 	"path"
 	"runtime"
@@ -13,6 +14,7 @@ import (
 	"github.com/fatih/color"
 )
 
+
 func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPrefix string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
 	for entry := range jobs {
 		compressor.Init()
@@ -20,7 +22,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 
 		header := &zip.FileHeader{
 			Name:   cleanPath(dirPrefix, entry.Path),
-			Method: zip.Store,
+			Method: compressor.ZipCompressionMethod(),
 		}
 		header.SetMode(entry.Info.Mode())
 		if date != nil {
@@ -54,6 +56,7 @@ func packedBundle(brotli bool, encryptionKey []byte, outFile io.Writer, srcDirPa
 	}
 
 	w := zip.NewWriter(outFile)
+	w.RegisterCompressor(brbundle.ZIPMethodLZ4, lz4Compressor)
 	defer w.Close()
 	w.SetComment(e.EncryptionFlag())
 	var lock sync.Mutex

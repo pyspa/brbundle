@@ -94,6 +94,7 @@ func NewReadCloser(reader io.Reader, closer io.Closer) io.ReadCloser {
 
 type FileEntry interface {
 	Reader() (io.ReadCloser, error)
+	ReadAll() ([]byte, error)
 	BrotliReader() (io.ReadCloser, error)
 	Stat() os.FileInfo
 	CompressedSize() int64

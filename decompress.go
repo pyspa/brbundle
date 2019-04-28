@@ -1,11 +1,14 @@
 package brbundle
 
 import (
+	"github.com/pierrec/lz4"
 	"io"
+	"io/ioutil"
 
 	"github.com/dsnet/compress/brotli"
-	"github.com/pierrec/lz4"
 )
+
+const ZIPMethodLZ4 uint16 = 65535
 
 type Decompressor func(io.Reader) io.Reader
 
@@ -14,10 +17,10 @@ func brotliDecompressor(input io.Reader) io.Reader {
 	return reader
 }
 
-func lz4Decompressor(input io.Reader) io.Reader {
-	return lz4.NewReader(input)
-}
-
 func nullDecompressor(input io.Reader) io.Reader {
 	return input
+}
+
+func lz4Decompressor(in io.Reader) io.ReadCloser {
+	return ioutil.NopCloser(lz4.NewReader(in))
 }

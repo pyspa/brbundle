@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gabriel-vasile/mimetype"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -79,6 +80,15 @@ func (f folderFileEntry) Reader() (io.ReadCloser, error) {
 		return nil, err
 	}
 	return NewReadCloser(decryptoReader, file), nil
+}
+
+func (f folderFileEntry) ReadAll() ([]byte, error) {
+	reader, err := f.Reader()
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
 }
 
 func (f folderFileEntry) BrotliReader() (io.ReadCloser, error) {

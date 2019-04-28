@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/shibukawa/brbundle"
 	"github.com/shibukawa/brbundle/websupport"
 )
 

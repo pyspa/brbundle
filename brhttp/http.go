@@ -27,6 +27,7 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reader, etag, headers, err := websupport.GetContent(file, f.option, r.Header.Get("Accept-Encoding"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	defer reader.Close()
 
@@ -37,7 +38,6 @@ func (f FileSystem) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotModified)
 		return
 	} else {
-		defer reader.Close()
 		io.Copy(w, reader)
 	}
 }

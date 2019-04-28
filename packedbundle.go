@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -19,6 +20,7 @@ type packedBundle struct {
 }
 
 func newPackedBundle(reader *zip.Reader, closer io.Closer, option Option) *packedBundle {
+	reader.RegisterDecompressor(ZIPMethodLZ4, lz4Decompressor)
 	sort.Slice(reader.File, func(i, j int) bool {
 		return reader.File[i].Name < reader.File[j].Name
 	})
@@ -52,8 +54,6 @@ func (p packedBundle) find(searchPath string) (FileEntry, error) {
 		switch file.Comment[0:1] {
 		case UseBrotli:
 			decompressor = brotliDecompressor
-		case UseLZ4:
-			decompressor = lz4Decompressor
 		case NotToCompress:
 			decompressor = nullDecompressor
 		}
@@ -97,6 +97,15 @@ func (p packedFileEntry) Reader() (io.ReadCloser, error) {
 	return NewReadCloser(p.decompressor(decryptoReader), reader), nil
 }
 
+func (p packedFileEntry) ReadAll() ([]byte, error) {
+	reader, err := p.Reader()
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
+}
+
 func (p packedFileEntry) BrotliReader() (io.ReadCloser, error) {
 	if p.file.Comment[0:1] == UseBrotli {
 		reader, err := p.file.Open()
@@ -121,7 +130,8 @@ func (p packedFileEntry) CompressedSize() int64 {
 
 func (p packedFileEntry) Stat() os.FileInfo {
 	_, etag, _ := ParseCommentString(p.file.Comment)
-	originalSize, _ := strconv.ParseInt(etag, 16, 64)
+	sizePart := strings.Split(etag, "-")[0]
+	originalSize, _ := strconv.ParseInt(sizePart, 16, 64)
 	return &zipFileInfo{
 		name:         p.Name(),
 		modTime:      p.file.Modified,

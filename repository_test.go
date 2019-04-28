@@ -2,6 +2,7 @@ package brbundle
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -169,4 +170,46 @@ var bundle_628f1de9a5dbfa77bcbe37f80bc91996 = []byte(
 
 func init() {
 	RegisterEmbeddedBundle(bundle_628f1de9a5dbfa77bcbe37f80bc91996, "")
+}
+
+func TestPackOptions(t *testing.T) {
+	testcases := []struct {
+		Name       string
+		BundleFile string
+	}{
+		{
+			"No Compression - No Encryption",
+			"raw-noe.pb",
+		},
+	}
+	testfilepaths := []string{
+		"gentestdata.sh",
+		"uiimage.png",
+		"lena.png",
+	}
+	for _, testcase := range testcases {
+		t.Run(testcase.Name, func(t *testing.T) {
+			r := NewRepository(ROption{
+				OmitEnvVarFolderBundle: true,
+				OmitExeBundle:          true,
+				OmitEmbeddedBundle:     true,
+			})
+			r.SetCacheSize(100)
+			err := r.RegisterBundle(filepath.Join("testdata", testcase.BundleFile))
+			assert.Nil(t, err)
+			if err != nil {
+				t.Log(err)
+				return
+			}
+			for _, testfilepath := range testfilepaths {
+				t.Run(testfilepath, func(t *testing.T) {
+					expected, _ := ioutil.ReadFile(filepath.Join("testdata", "src", testfilepath))
+					entry, err := r.Find(testfilepath)
+					assert.Nil(t, err)
+					actual, err := entry.ReadAll()
+					assert.Equal(t, expected, actual)
+				})
+			}
+		})
+	}
 }

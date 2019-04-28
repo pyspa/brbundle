@@ -67,7 +67,9 @@ func FindFile(p string, o brbundle.WebOption) (file brbundle.FileEntry, found, r
 		checkDir = true
 	}
 
-	file, err := o.Repository.Find(p)
+	var err error
+
+	file, err = o.Repository.Find(p)
 	if file == nil {
 		if o.DirectoryIndex != "" && !checkDir {
 			if p == "" {
@@ -103,7 +105,6 @@ func GetContent(file brbundle.FileEntry, o brbundle.WebOption, acceptEncoding st
 	headers[1] = [2]string{"Content-Type", contentType}
 
 	brreader, _ := file.BrotliReader()
-
 	if brreader != nil && HasSupportBrotli(acceptEncoding) {
 		headers[2] = [2]string{"Content-Length", strconv.FormatInt(file.CompressedSize(), 10)}
 		headers = append(headers, [2]string{"Content-Encoding", "br"})

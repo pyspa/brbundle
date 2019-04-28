@@ -4,8 +4,9 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"github.com/hashicorp/golang-lru"
 	"strings"
+
+	"github.com/hashicorp/golang-lru"
 )
 
 type BundleType int

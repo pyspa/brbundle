@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
+	"github.com/pierrec/lz4"
 	"io"
 	"os"
 	"os/exec"
@@ -22,13 +24,6 @@ type Compressor struct {
 func HasBrotli() bool {
 	brotli := exec.Command("brotli", "--help")
 	err := brotli.Run()
-
-	return err == nil
-}
-
-func HasLZ4() bool {
-	lz4 := exec.Command("lz4", "--help")
-	err := lz4.Run()
 
 	return err == nil
 }
@@ -60,7 +55,7 @@ func (c *Compressor) Compress(srcPath string, size int) (err error) {
 	if c.useBrotli {
 		cmd = exec.Command("brotli", "--stdout")
 	} else {
-		cmd = exec.Command("lz4", "-9", "-c")
+		cmd = exec.Command("lz4", "-c")
 	}
 	c.reader, c.writer = io.Pipe()
 	go func() {
@@ -73,7 +68,7 @@ func (c *Compressor) Compress(srcPath string, size int) (err error) {
 	c.compressedSize = c.result.Len()
 	if err == nil {
 		c.skipCompress = !c.shouldUseCompressedResult(size)
-		if c.skipCompress {
+		if c.skipCompress || !c.useBrotli {
 			src, _ := os.Open(srcPath)
 			c.result.Reset()
 			io.Copy(c.result, src)
@@ -83,17 +78,18 @@ func (c *Compressor) Compress(srcPath string, size int) (err error) {
 }
 
 func (c Compressor) CompressionFlag() string {
-	if !c.useLZ4 {
+	if !c.skipCompress && c.useBrotli {
+		return brbundle.UseBrotli
+	} else {
 		return brbundle.NotToCompress
 	}
-	if c.skipCompress {
-		return brbundle.NotToCompress
+}
+
+func (c Compressor) ZipCompressionMethod() uint16 {
+	if c.skipCompress || (!c.skipCompress && c.useBrotli) {
+		return zip.Store
 	} else {
-		if c.useBrotli {
-			return brbundle.UseBrotli
-		} else {
-			return brbundle.UseLZ4
-		}
+		return brbundle.ZIPMethodLZ4
 	}
 }
 
@@ -108,4 +104,8 @@ func (c Compressor) shouldUseCompressedResult(uncompressed int) bool {
 
 func (c Compressor) Size() int {
 	return c.compressedSize
+}
+
+func lz4Compressor(out io.Writer) (io.WriteCloser, error) {
+	return lz4.NewWriter(out), nil
 }

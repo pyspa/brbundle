@@ -20,7 +20,7 @@ func initRepo() *brbundle.Repository {
 		OmitExeBundle:          true,
 		OmitEmbeddedBundle:     true,
 	})
-	err := r.RegisterBundle("testdata/br-noc.pb")
+	err := r.RegisterBundle("testdata/br-noe.pb")
 	if err != nil {
 		panic(err)
 	}
