@@ -179,7 +179,7 @@ func TestPackOptions(t *testing.T) {
 	}{
 		{
 			"No Compression - No Encryption",
-			"raw-noe.pb",
+			"lz4-noe.pb",
 		},
 	}
 	testfilepaths := []string{

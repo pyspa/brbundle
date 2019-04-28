@@ -22,7 +22,7 @@ func TestEchoMount_NoBrotli(t *testing.T) {
 		Repository: repo,
 	})
 
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(echo.GET, "/rootfile.txt", nil)
 	rec := httptest.NewRecorder()
 
 	c := e.NewContext(req, rec)
@@ -42,7 +42,7 @@ func TestEchoMount_Brotli(t *testing.T) {
 		Repository: repo,
 	})
 
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(echo.GET, "/rootfile.txt", nil)
 	req.Header.Add("Accept-Encoding", "br")
 	rec := httptest.NewRecorder()
 
@@ -70,7 +70,7 @@ func TestEchoMount_SPAOption(t *testing.T) {
 		SPAFallback: "index.html",
 	})
 
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(echo.GET, "/profile", nil)
 	req.Header.Add("Accept-Encoding", "br")
 	rec := httptest.NewRecorder()
 

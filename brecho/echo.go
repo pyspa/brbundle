@@ -1,13 +1,13 @@
 package brecho
 
 import (
-	"github.com/shibukawa/brbundle/websupport"
 	"io"
 	"net/url"
 	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/shibukawa/brbundle"
+	"github.com/shibukawa/brbundle/websupport"
 )
 
 func Mount(option ...brbundle.WebOption) func(echo.Context) error {
@@ -25,7 +25,7 @@ func Mount(option ...brbundle.WebOption) func(echo.Context) error {
 
 		file, found, redirectDir := websupport.FindFile(p, o)
 		if redirectDir {
-			return c.Redirect(301, "./")
+			return c.Redirect(302, "./")
 		} else if !found {
 			return echo.ErrNotFound
 		}
