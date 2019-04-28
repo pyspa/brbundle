@@ -39,6 +39,7 @@ func (b *baseBundle) setDecryptionKey(key string) error {
 			return err
 		}
 		b.decryptor = decryptor
+		return nil
 	case NotToEncrypto:
 		if key != "" {
 			return fmt.Errorf("bundle '%s' is not encrypted", b.name)

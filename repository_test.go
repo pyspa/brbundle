@@ -174,12 +174,29 @@ func init() {
 
 func TestPackOptions(t *testing.T) {
 	testcases := []struct {
-		Name       string
-		BundleFile string
+		Name        string
+		BundleFile  string
+		DecryptoKey string
 	}{
 		{
-			"No Compression - No Encryption",
+			"LZ4 Compression - No Encryption",
 			"lz4-noe.pb",
+			"",
+		},
+		{
+			"Brotli Compression - No Encryption",
+			"br-noe.pb",
+			"",
+		},
+		{
+			"LZ4 Compression - AES Encryption",
+			"lz4-aes.pb",
+			"nWKPE84p+fTc1UiMNFpPxaYFkNq44ieaNC9th8EcQC7o5c/+QRgyiKHSsc4=",
+		},
+		{
+			"Brotli Compression - AES Encryption",
+			"br-aes.pb",
+			"nWKPE84p+fTc1UiMNFpPxaYFkNq44ieaNC9th8EcQC7o5c/+QRgyiKHSsc4=",
 		},
 	}
 	testfilepaths := []string{
@@ -195,7 +212,11 @@ func TestPackOptions(t *testing.T) {
 				OmitEmbeddedBundle:     true,
 			})
 			r.SetCacheSize(100)
-			err := r.RegisterBundle(filepath.Join("testdata", testcase.BundleFile))
+			err := r.RegisterBundle(filepath.Join("testdata", testcase.BundleFile),
+				Option{
+					DecryptoKey: testcase.DecryptoKey,
+				},
+			)
 			assert.Nil(t, err)
 			if err != nil {
 				t.Log(err)
