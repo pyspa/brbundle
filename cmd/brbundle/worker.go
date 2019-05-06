@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"path/filepath"
 	"sync"
@@ -38,19 +39,25 @@ func processInput(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirP
 
 	wg.Wait()
 
-	path := cleanPath(dirPrefix, entry.Path)
+	path := cleanPath(dirPrefix, entry.DestPath)
+	renameInfo := ""
+	if entry.Path != entry.DestPath {
+		renameInfo = fmt.Sprintf("Original File = %s, ", entry.Path)
+	}
+	sizeInfo := ""
 	if size != 0 {
 		if compressor.skipCompress {
-			color.Green("done: %s (%d bytes, skip compression)\n", path, size)
+			sizeInfo = fmt.Sprintf("%d bytes, skip compression", size)
 		} else if compressor.Size() == 0 {
-			color.Green("done: %s (%d bytes)\n", path, size)
+			sizeInfo = fmt.Sprintf("%d bytes", size)
 		} else {
 			percent := compressor.Size() * 100 / size
-			color.Green("done: %s (%d bytes / %d bytes = %d%%)\n", path, compressor.Size(), size, percent)
+			sizeInfo = fmt.Sprintf("%d bytes / %d bytes = %d%%", compressor.Size(), size, percent)
 		}
 	} else {
-		color.Green("done: %s (0 bytes)\n", path, compressor.Size())
+		sizeInfo = "0 bytes"
 	}
+	color.Green("done: %s (%s%s)\n", path, renameInfo, sizeInfo)
 
 	return nil
 }

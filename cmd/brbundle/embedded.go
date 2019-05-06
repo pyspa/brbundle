@@ -15,8 +15,7 @@ import (
 	"time"
 )
 
-const embeddedSourceTemplate = `
-package [[.PackageName]]
+const embeddedSourceTemplate = `[[.BuildTag]]package [[.PackageName]]
 
 import (
     "github.com/shibukawa/brbundle"
@@ -35,6 +34,7 @@ type Context struct {
 	VariableName string
 	bundleName   string
 	lock         sync.Mutex
+	buildTag     string
 }
 
 func (c Context) Content() string {
@@ -45,9 +45,16 @@ func (c Context) BundleName() string {
 	return fmt.Sprintf("%#v", c.bundleName)
 }
 
-func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *os.File, srcDirPath, dirPrefix, bundleName string, date *time.Time) error {
+func (c Context) BuildTag() string {
+	if c.buildTag == "" {
+		return ""
+	}
+	return fmt.Sprintf("// +build %s\n\n", c.buildTag)
+}
+
+func embedded(brotli bool, encryptionKey []byte, buildTag, packageName string, destFile *os.File, srcDirPath, dirPrefix, bundleName string, date *time.Time) error {
 	var zipContent bytes.Buffer
-	packedBundle(brotli, encryptionKey, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
+	packedBundle(brotli, encryptionKey, buildTag, &zipContent, srcDirPath, dirPrefix, "Embedded File", date)
 
 	_, err := NewEncryptor(encryptionKey)
 	if err != nil {
@@ -63,6 +70,7 @@ func embedded(brotli bool, encryptionKey []byte, packageName string, destFile *o
 		PackageName:  packageName,
 		VariableName: fmt.Sprintf("bundle_%s", hex.EncodeToString(h.Sum(nil))),
 		bundleName:   bundleName,
+		buildTag:     buildTag,
 		zipContent:   &zipContent,
 	}
 

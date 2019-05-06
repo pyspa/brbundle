@@ -16,12 +16,14 @@ var (
 	generateKeyCommand = app.Command("key-gen", "Generate encryption key")
 
 	contentFolderCommand   = app.Command("folder", "Just folder copy w/o encryption")
-	contentFolderCryptoKey = contentFolderCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
+	contentFolderCryptoKey = contentFolderCommand.Flag("crypto", "Base64 encoded 44 bytes string to use encryption").Short('c').String()
+	contentFolderTags      = contentFolderCommand.Flag("tags", "Filter files by suffix after double underscore (__)").Short('t').String()
 	contentFolderDestDir   = contentFolderCommand.Arg("dest-dir", "Destination folder (folder content are removed if exists)").Required().String()
 	contentFolderSourceDir = contentFolderCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 
 	bundleCommand       = app.Command("bundle", "Append static files to an execution file")
-	bundleCryptoKey     = bundleCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
+	bundleCryptoKey     = bundleCommand.Flag("crypto", "Base64 encoded 44 bytes string to use encryption").Short('c').String()
+	bundleTags          = bundleCommand.Flag("tags", "Filter files by suffix after double underscore (__)").Short('t').String()
 	bundleFastCompress  = bundleCommand.Flag("fast", "Compressed by LZ4 instead of Brotli").Short('f').Bool()
 	bundleDirPrefix     = bundleCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	bundleSpecifiedDate = bundleCommand.Flag("date", "Pseudo date of files").Short('d').String()
@@ -29,7 +31,8 @@ var (
 	bundleSourceDir     = bundleCommand.Arg("src", "Directory that contains static files").Required().ExistingDir()
 
 	packedCommand       = app.Command("pack", "Make single packed file")
-	packedCryptoKey     = packedCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
+	packedCryptoKey     = packedCommand.Flag("crypto", "Base64 encoded 44 bytes string to use encryption").Short('c').String()
+	packedTags          = packedCommand.Flag("tags", "Filter files by suffix after double underscore (__)").Short('t').String()
 	packedFastCompress  = packedCommand.Flag("fast", "Compressed by LZ4 instead of Brotli").Short('f').Bool()
 	packedDirPrefix     = packedCommand.Flag("dir-prefix", "Additional folder path added to resulting bundle contents").Short('x').String()
 	packedSpecifiedDate = packedCommand.Flag("date", "Pseudo date of files").Short('d').String()
@@ -37,7 +40,8 @@ var (
 	packedSourceDir     = packedCommand.Arg("src-dir", "Directory that contains static files").Required().ExistingDir()
 
 	embeddedCommand       = app.Command("embedded", "Generate Golang code that contains")
-	embeddedCryptoKey     = embeddedCommand.Flag("crypto", "base64 encoded 44 bytes string to use encryption").Short('c').String()
+	embeddedCryptoKey     = embeddedCommand.Flag("crypto", "Base64 encoded 44 bytes string to use encryption").Short('c').String()
+	embeddedTags          = embeddedCommand.Flag("tags", "Filter files by suffix after double underscore (__)").Short('t').String()
 	embeddedFastCompress  = embeddedCommand.Flag("fast", "Compressed by LZ4 instead of Brotli").Short('f').Bool()
 	embeddedBundleName    = embeddedCommand.Flag("name", "Bundle name to specify the bundle. It is needed to load encrypted bundle.").Short('n').String()
 	packageName           = embeddedCommand.Flag("package", "Package name").Short('p').Default("main").String()
@@ -80,14 +84,14 @@ func main() {
 		if err != nil {
 			break
 		}
-		createContentFolder(cryptoKey, *contentFolderDestDir, *contentFolderSourceDir)
+		createContentFolder(cryptoKey, *contentFolderTags, *contentFolderDestDir, *contentFolderSourceDir)
 	case bundleCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*bundleCryptoKey, *bundleSpecifiedDate)
 		if err != nil {
 			break
 		}
-		appendToExec(!*bundleFastCompress, cryptoKey, *bundleTargetExec, *bundleSourceDir, *bundleDirPrefix, date)
+		appendToExec(!*bundleFastCompress, cryptoKey, *bundleTags, *bundleTargetExec, *bundleSourceDir, *bundleDirPrefix, date)
 	case packedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*packedCryptoKey, *bundleSpecifiedDate)
@@ -95,14 +99,14 @@ func main() {
 			break
 		}
 		defer (*packedOutputFile).Close()
-		err = packedBundle(!*packedFastCompress, cryptoKey, *packedOutputFile, *packedSourceDir, *packedDirPrefix, "", date)
+		err = packedBundle(!*packedFastCompress, cryptoKey, *packedTags, *packedOutputFile, *packedSourceDir, *packedDirPrefix, "", date)
 	case embeddedCommand.FullCommand():
 		color.HiBlue("\nbrbundle by Yoshiki Shibukawa\n\n")
 		cryptoKey, date, err = parseKeyAndDate(*embeddedCryptoKey, *embeddedSpecifiedDate)
 		if err != nil {
 			break
 		}
-		err = embedded(!*embeddedFastCompress, cryptoKey, *packageName, *outputFileName, *embeddedSourceDir, *embeddedDirPrefix, *embeddedBundleName, date)
+		err = embedded(!*embeddedFastCompress, cryptoKey, *embeddedTags, *packageName, *outputFileName, *embeddedSourceDir, *embeddedDirPrefix, *embeddedBundleName, date)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, color.RedString("%v", err))

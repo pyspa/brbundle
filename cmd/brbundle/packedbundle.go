@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
 	"github.com/shibukawa/brbundle"
 	"io"
 	"path"
@@ -21,7 +22,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 		encryptor.Init()
 
 		header := &zip.FileHeader{
-			Name:   cleanPath(dirPrefix, entry.Path),
+			Name:   cleanPath(dirPrefix, entry.DestPath),
 			Method: compressor.ZipCompressionMethod(),
 		}
 		header.SetMode(entry.Info.Mode())
@@ -48,7 +49,7 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 	wait <- struct{}{}
 }
 
-func packedBundle(brotli bool, encryptionKey []byte, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
+func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
 
 	e, err := NewEncryptor(encryptionKey)
 	if err != nil {
@@ -61,13 +62,19 @@ func packedBundle(brotli bool, encryptionKey []byte, outFile io.Writer, srcDirPa
 	w.SetComment(e.EncryptionFlag())
 	var lock sync.Mutex
 
+	bt := ""
+	if buildTag != "" {
+		bt = fmt.Sprintf(", Build Tag: %#v", buildTag)
+	}
+	ec := len(encryptionKey) != 0
+
 	if mode == "" {
-		color.Cyan("Packed Bundle Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", brotli, len(encryptionKey) != 0)
+		color.Cyan("Packed Bundle Mode (Use Brotli: %v, Use Encyrption: %v%s)\n\n", brotli, ec, bt)
 	} else {
-		color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v)\n\n", mode, brotli, len(encryptionKey) != 0)
+		color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v%s)\n\n", mode, brotli, ec, bt)
 	}
 
-	paths, _, ignored := Traverse(srcDirPath)
+	paths, _, ignored := Traverse(srcDirPath, buildTag)
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {

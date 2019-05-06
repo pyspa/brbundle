@@ -9,10 +9,10 @@ import (
 	"github.com/fatih/color"
 )
 
-func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan Entry, wait chan<- struct{}) {
+func copyWorker(encryptor *Encryptor, buildTag, destPath, srcDirPath string, jobs <-chan Entry, wait chan<- struct{}) {
 	compressor := NewCompressor(false, false)
 	for entry := range jobs {
-		outputPath := filepath.Join(destPath, entry.Path)
+		outputPath := filepath.Join(destPath, entry.DestPath)
 		output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, entry.Info.Mode())
 		if err != nil {
 			color.Red("write file creation error: %s\n", entry.Path, err.Error())
@@ -33,20 +33,20 @@ func copyWorker(encryptor *Encryptor, destPath, srcDirPath string, jobs <-chan E
 	wait <- struct{}{}
 }
 
-func createContentFolder(ekey []byte, destPath, srcDirPath string) {
+func createContentFolder(ekey []byte, buildTag, destPath, srcDirPath string) {
 	color.Cyan("Content Folder Mode (Encryption: %v)\n\n", len(ekey) == 0)
 
 	os.MkdirAll(destPath, 0755)
-	paths, dirs, ignored := Traverse(srcDirPath)
+	paths, dirs, ignored := Traverse(srcDirPath, buildTag)
 
 	for _, dir := range dirs {
-		os.MkdirAll(filepath.Join(destPath, dir.Path), 0755)
+		os.MkdirAll(filepath.Join(destPath, dir.DestPath), 0755)
 	}
 
 	wait := make(chan struct{})
 	for i := 0; i < runtime.NumCPU(); i++ {
 		encrypto, _ := NewEncryptor(ekey)
-		go copyWorker(encrypto, destPath, srcDirPath, paths, wait)
+		go copyWorker(encrypto, buildTag, destPath, srcDirPath, paths, wait)
 	}
 
 	close(paths)
