@@ -179,8 +179,8 @@ func TestPackOptions(t *testing.T) {
 		DecryptoKey string
 	}{
 		{
-			"LZ4 Compression - No Encryption",
-			"lz4-noe.pb",
+			"Snappy Compression - No Encryption",
+			"sn-noe.pb",
 			"",
 		},
 		{
@@ -189,8 +189,8 @@ func TestPackOptions(t *testing.T) {
 			"",
 		},
 		{
-			"LZ4 Compression - AES Encryption",
-			"lz4-aes.pb",
+			"Snappy Compression - AES Encryption",
+			"sn-aes.pb",
 			"nWKPE84p+fTc1UiMNFpPxaYFkNq44ieaNC9th8EcQC7o5c/+QRgyiKHSsc4=",
 		},
 		{

@@ -57,7 +57,7 @@ func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io
 	}
 
 	w := zip.NewWriter(outFile)
-	w.RegisterCompressor(brbundle.ZIPMethodLZ4, lz4Compressor)
+	w.RegisterCompressor(brbundle.ZIPMethodSnappy, snappyCompressor)
 	defer w.Close()
 	w.SetComment(e.EncryptionFlag())
 	var lock sync.Mutex

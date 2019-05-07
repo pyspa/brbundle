@@ -20,7 +20,7 @@ type packedBundle struct {
 }
 
 func newPackedBundle(reader *zip.Reader, closer io.Closer, option Option) *packedBundle {
-	reader.RegisterDecompressor(ZIPMethodLZ4, lz4Decompressor)
+	reader.RegisterDecompressor(ZIPMethodSnappy, snappyDecompressor)
 	sort.Slice(reader.File, func(i, j int) bool {
 		return reader.File[i].Name < reader.File[j].Name
 	})

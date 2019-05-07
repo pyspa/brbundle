@@ -3,7 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"github.com/pierrec/lz4"
+	"github.com/golang/snappy"
 	"io"
 	"os"
 	"os/exec"
@@ -13,7 +13,7 @@ import (
 
 type Compressor struct {
 	useBrotli      bool
-	useLZ4         bool
+	useSnappy      bool
 	reader         *io.PipeReader
 	writer         *io.PipeWriter
 	result         *bytes.Buffer
@@ -28,10 +28,10 @@ func HasBrotli() bool {
 	return err == nil
 }
 
-func NewCompressor(useBrotli, useLZ4 bool) *Compressor {
+func NewCompressor(useBrotli, useSnappy bool) *Compressor {
 	return &Compressor{
 		useBrotli: useBrotli,
-		useLZ4:    useLZ4,
+		useSnappy: useSnappy,
 		result:    &bytes.Buffer{},
 	}
 }
@@ -47,27 +47,28 @@ func (c *Compressor) Compress(srcPath string, size int) (err error) {
 	}
 	defer src.Close()
 
-	if !c.useLZ4 {
+	if !c.useSnappy {
 		io.Copy(c.result, src)
 		return
-	}
-	var cmd *exec.Cmd
-	if c.useBrotli {
-		cmd = exec.Command("brotli", "--stdout")
+	} else if c.useBrotli {
+		cmd := exec.Command("brotli", "--stdout")
+		c.reader, c.writer = io.Pipe()
+		go func() {
+			defer c.writer.Close()
+			io.Copy(c.writer, src)
+		}()
+		cmd.Stdin = c.reader
+		cmd.Stdout = c.result
+		err = cmd.Run()
+		c.compressedSize = c.result.Len()
 	} else {
-		cmd = exec.Command("lz4", "-c")
+		w := snappy.NewBufferedWriter(c.result)
+		var size int64
+		size, err = io.Copy(w, src)
+		c.compressedSize = int(size)
 	}
-	c.reader, c.writer = io.Pipe()
-	go func() {
-		defer c.writer.Close()
-		io.Copy(c.writer, src)
-	}()
-	cmd.Stdin = c.reader
-	cmd.Stdout = c.result
-	err = cmd.Run()
-	c.compressedSize = c.result.Len()
 	if err == nil {
-		c.skipCompress = !c.shouldUseCompressedResult(size)
+		c.skipCompress = !shouldUseCompressedResult(c.compressedSize, size)
 		if c.skipCompress || !c.useBrotli {
 			src, _ := os.Open(srcPath)
 			c.result.Reset()
@@ -89,7 +90,7 @@ func (c Compressor) ZipCompressionMethod() uint16 {
 	if c.skipCompress || (!c.skipCompress && c.useBrotli) {
 		return zip.Store
 	} else {
-		return brbundle.ZIPMethodLZ4
+		return brbundle.ZIPMethodSnappy
 	}
 }
 
@@ -97,8 +98,7 @@ func (c *Compressor) WriteTo(w io.Writer) (n int64, err error) {
 	return io.Copy(w, c.result)
 }
 
-func (c Compressor) shouldUseCompressedResult(uncompressed int) bool {
-	compressed := c.Size()
+func shouldUseCompressedResult(compressed, uncompressed int) bool {
 	return (uncompressed <= 5000 && uncompressed > compressed + 100) || (uncompressed > 5000 && (int(float64(uncompressed)*0.98) > compressed))
 }
 
@@ -106,6 +106,6 @@ func (c Compressor) Size() int {
 	return c.compressedSize
 }
 
-func lz4Compressor(out io.Writer) (io.WriteCloser, error) {
-	return lz4.NewWriter(out), nil
+func snappyCompressor(out io.Writer) (io.WriteCloser, error) {
+	return snappy.NewBufferedWriter(out), nil
 }

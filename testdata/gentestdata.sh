@@ -30,15 +30,15 @@ mkdir testdata/raw-aes
 
 # embedded
 ./cmd/brbundle/brbundle embedded                         -p brbundle -o testdata/result/embedded_br_noe_test.go  -x brotli/noenc testdata/src
-./cmd/brbundle/brbundle embedded -t windows -f           -p brbundle -o testdata/result/embedded_lz4_noe_test.go -x lz4/noenc    testdata/src
+./cmd/brbundle/brbundle embedded -t windows -f           -p brbundle -o testdata/result/embedded_sn_noe_test.go -x sn/noenc    testdata/src
 ./cmd/brbundle/brbundle embedded -t linux      -c ${KEY} -p brbundle -o testdata/result/embedded_br_aes_test.go  -x brotli/aes   testdata/src
-./cmd/brbundle/brbundle embedded -t darwin  -f -c ${KEY} -p brbundle -o testdata/result/embedded_lz4_aes_test.go -x lz4/aes      testdata/src
+./cmd/brbundle/brbundle embedded -t darwin  -f -c ${KEY} -p brbundle -o testdata/result/embedded_sn_aes_test.go -x sn/aes      testdata/src
 
 # pack
 ./cmd/brbundle/brbundle pack              testdata/br-noe.pb  testdata/src
-./cmd/brbundle/brbundle pack -f           testdata/lz4-noe.pb testdata/src
+./cmd/brbundle/brbundle pack -f           testdata/sn-noe.pb testdata/src
 ./cmd/brbundle/brbundle pack    -c ${KEY} testdata/br-aes.pb  testdata/src
-./cmd/brbundle/brbundle pack -f -c ${KEY} testdata/lz4-aes.pb testdata/src
+./cmd/brbundle/brbundle pack -f -c ${KEY} testdata/sn-aes.pb testdata/src
 
 # bundle
 ./cmd/brbundle/brbundle bundle -t windows testdata/testexe/testexe.exe    testdata/src

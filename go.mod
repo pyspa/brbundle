@@ -12,6 +12,7 @@ require (
 	github.com/gin-gonic/gin v1.3.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/golang/protobuf v1.3.1 // indirect
+	github.com/golang/snappy v0.0.1
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo v3.3.10+incompatible
