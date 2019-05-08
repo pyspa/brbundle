@@ -111,10 +111,14 @@ func (f folderFileEntry) Path() string {
 	return f.logicalPath
 }
 
-func (f *folderFileEntry) EtagAndContentType() (string, string) {
+func (f folderFileEntry) EtagAndContentType() (string, string) {
 	size := int(f.info.Size())
 	if f.contentType == "" {
 		f.contentType, _, _ = mimetype.DetectFile(f.filePath)
 	}
 	return fmt.Sprintf("%x-%x", size, f.info.ModTime().Unix()), f.contentType
+}
+
+func (f folderFileEntry) GetLocalPath() (string, error) {
+	return f.filePath, nil
 }

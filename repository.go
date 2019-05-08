@@ -171,35 +171,37 @@ func (r *Repository) Unload(name string) error {
 	return fmt.Errorf("PackedBundle '%s' is not found", name)
 }
 
-func (r *Repository) Find(path string) (FileEntry, error) {
-	r.lazyInit()
-	if r.Cache != nil {
-		cachedBundle, ok := r.Cache.Get(path)
-		if ok {
-			return cachedBundle.(bundle).find(path)
+func (r *Repository) Find(candidatePaths ...string) (FileEntry, error) {
+	for _, path := range candidatePaths {
+		r.lazyInit()
+		if r.Cache != nil {
+			cachedBundle, ok := r.Cache.Get(path)
+			if ok {
+				return cachedBundle.(bundle).find(path)
+			}
 		}
-	}
-	for _, bundles := range r.bundles {
-		for _, bundle := range bundles {
-			relPath := path
-			mountPoint := bundle.getMountPoint()
-			if bundle.getMountPoint() != "" {
-				if !strings.HasPrefix(path, mountPoint) {
+		for _, bundles := range r.bundles {
+			for _, bundle := range bundles {
+				relPath := path
+				mountPoint := bundle.getMountPoint()
+				if bundle.getMountPoint() != "" {
+					if !strings.HasPrefix(path, mountPoint) {
+						continue
+					}
+					relPath = path[len(mountPoint):]
+				}
+				fileEntry, err := bundle.find(relPath)
+				if err != nil {
 					continue
 				}
-				relPath = path[len(mountPoint):]
-			}
-			fileEntry, err := bundle.find(relPath)
-			if err != nil {
-				continue
-			}
-			if fileEntry != nil {
-				if r.Cache != nil {
-					r.Cache.Add(path, bundle)
+				if fileEntry != nil {
+					if r.Cache != nil {
+						r.Cache.Add(path, bundle)
+					}
+					return fileEntry, nil
 				}
-				return fileEntry, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("Asset '%s' is not in bundles", path)
+	return nil, fmt.Errorf("Asset %s is not in bundles", strings.Join(candidatePaths, ", "))
 }

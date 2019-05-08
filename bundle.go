@@ -102,4 +102,5 @@ type FileEntry interface {
 	Name() string
 	Path() string
 	EtagAndContentType() (string, string)
+	GetLocalPath() (string, error)
 }

@@ -1,8 +1,10 @@
 package brbundle
 
 import (
+	"bytes"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,6 +99,33 @@ func TestRepositoryFolderBundle(t *testing.T) {
 	}
 }
 
+func TestRepositoryFolderBundle_GetLocalPath(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err := r.RegisterFolder("testdata/src-simple")
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	f, _ := r.Find("a.txt")
+	p, err := f.GetLocalPath()
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	assert.True(t, strings.HasSuffix(p, f.Name()))
+	content, _ := f.ReadAll()
+	localContent, err := ioutil.ReadFile(p)
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	assert.True(t, bytes.Equal(content, localContent))
+}
+
 func TestRepositoryCache(t *testing.T) {
 	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
@@ -129,6 +158,30 @@ func TestRepositoryCache(t *testing.T) {
 	assert.Nil(t, f3)
 }
 
+func TestRepositoryPackedFile_GetLocalPath(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     false,
+	})
+	f, _ := r.Find("a.txt")
+	p, err := f.GetLocalPath()
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	assert.True(t, strings.HasSuffix(p, f.Name()))
+	content, _ := f.ReadAll()
+	localContent, err := ioutil.ReadFile(p)
+	t.Log(string(content))
+	t.Log(string(localContent))
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	assert.True(t, bytes.Equal(content, localContent))
+}
+
 func TestRegisterUnload(t *testing.T) {
 	r := NewRepository(ROption{
 		OmitEnvVarFolderBundle: true,
@@ -155,18 +208,24 @@ func TestRegisterUnload(t *testing.T) {
 }
 
 var bundle_628f1de9a5dbfa77bcbe37f80bc91996 = []byte(
-	"PK\x03\x04\x14\x00\b\x00\x00\x00k\x03\x94N\x00\x00\x00\x00\x00\x00\x00\x00" +
-		"\x00\x00\x00\x00\x05\x00\t\x00a.txtUT\x05\x00\x01\xda\xe8\xb9\\hello wo" +
-		"rldPK\a\b\x85\x11J\r\v\x00\x00\x00\v\x00\x00\x00PK\x03\x04\x14\x00\b\x00" +
-		"\x00\x00=\xb2\x93N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x00" +
-		"\t\x00b.txtUT\x05\x00\x01\x87ʹ\\Hello World\nPK\a\b\xe3啰\f\x00\x00\x00" +
-		"\f\x00\x00\x00PK\x01\x02\x14\x03\x14\x00\b\x00\x00\x00k\x03\x94N\x85\x11" +
-		"J\r\v\x00\x00\x00\v\x00\x00\x00\x05\x00\t\x00\v\x00\x00\x00\x00\x00\x00" +
-		"\x00\xa4\x81\x00\x00\x00\x00a.txtUT\x05\x00\x01\xda\xe8\xb9\\-b-5cb9e8d" +
-		"aPK\x01\x02\x14\x03\x14\x00\b\x00\x00\x00=\xb2\x93N\xe3啰\f\x00\x00\x00" +
-		"\f\x00\x00\x00\x05\x00\t\x00\v\x00\x00\x00\x00\x00\x00\x00\xa4\x81G\x00" +
-		"\x00\x00b.txtUT\x05\x00\x01\x87ʹ\\-c-5cb9ca87PK\x05\x06\x00\x00\x00\x00" +
-		"\x02\x00\x02\x00\x8e\x00\x00\x00\x8f\x00\x00\x00\x01\x00-")
+	"PK\x03\x04\x14\x00\b\x00\x00\x00\xb5\x1d\x94N\x00\x00\x00\x00\x00\x00\x00" +
+	"\x00\x00\x00\x00\x00\x05\x00\t\x00c.txtUT\x05\x00\x01W\x17\xba\\hello w" +
+	"orldPK\a\b\x85\x11J\r\v\x00\x00\x00\v\x00\x00\x00PK\x03\x04\x14\x00\b\x00" +
+	"\x00\x00k\x03\x94N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x00" +
+	"\t\x00a.txtUT\x05\x00\x01\xda\xe8\xb9\\hello worldPK\a\b\x85\x11J\r\v\x00" +
+	"\x00\x00\v\x00\x00\x00PK\x03\x04\x14\x00\b\x00\x00\x00=\xb2\x93N\x00\x00" +
+	"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x00\t\x00b.txtUT\x05\x00\x01" +
+	"\x87ʹ\\Hello World\nPK\a\b\xe3啰\f\x00\x00\x00\f\x00\x00\x00PK\x01\x02" +
+	"\x14\x03\x14\x00\b\x00\x00\x00\xb5\x1d\x94N\x85\x11J\r\v\x00\x00\x00\v\x00" +
+	"\x00\x00\x05\x00\t\x00\x17\x00\x00\x00\x00\x00\x00\x00\xa4\x81\x00\x00\x00" +
+	"\x00c.txtUT\x05\x00\x01W\x17\xba\\-,b-5cba1757,text/plainPK\x01\x02\x14" +
+	"\x03\x14\x00\b\x00\x00\x00k\x03\x94N\x85\x11J\r\v\x00\x00\x00\v\x00\x00" +
+	"\x00\x05\x00\t\x00\x17\x00\x00\x00\x00\x00\x00\x00\xa4\x81G\x00\x00\x00" +
+	"a.txtUT\x05\x00\x01\xda\xe8\xb9\\-,b-5cb9e8da,text/plainPK\x01\x02\x14\x03" +
+	"\x14\x00\b\x00\x00\x00=\xb2\x93N\xe3啰\f\x00\x00\x00\f\x00\x00\x00\x05" +
+	"\x00\t\x00\x17\x00\x00\x00\x00\x00\x00\x00\xa4\x81\x8e\x00\x00\x00b.txt" +
+	"UT\x05\x00\x01\x87ʹ\\-,c-5cb9ca87,text/plainPK\x05\x06\x00\x00\x00\x00" +
+	"\x03\x00\x03\x00\xf9\x00\x00\x00\xd6\x00\x00\x00\x01\x00-")
 
 func init() {
 	RegisterEmbeddedBundle(bundle_628f1de9a5dbfa77bcbe37f80bc91996, "")

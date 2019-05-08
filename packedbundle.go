@@ -15,8 +15,9 @@ import (
 
 type packedBundle struct {
 	baseBundle
-	reader *zip.Reader
-	closer io.Closer
+	reader        *zip.Reader
+	closer        io.Closer
+	localFilePath string
 }
 
 func newPackedBundle(reader *zip.Reader, closer io.Closer, option Option) *packedBundle {
