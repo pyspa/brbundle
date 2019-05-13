@@ -94,23 +94,31 @@ func embedded(brotli bool, encryptionKey []byte, buildTag, packageName string, d
 func splitByte(src []byte, length int) []string {
 	var result []string
 
-	str := fmt.Sprintf("%#v", string(src))
-	str = str[1 : len(str)-1]
-	start := 0
-	for i := 0; i < len(str)-3; i++ {
-		if i-start > length {
-			result = append(result, str[start:i])
-			start = i
+	builder := &strings.Builder{}
+	for _, c := range src {
+		printable := 32 <= c && c <= 126 && c != 34 && c != 92
+		if printable {
+			builder.WriteByte(c)
+		} else if c == 10 {
+			builder.WriteString(`\n`)
+		} else if c == 34 {
+			builder.WriteString(`\"`)
+		} else if c == 92 {
+			builder.WriteString(`\\`)
+		} else {
+			fmt.Fprintf(builder, "\\x%02x", c)
 		}
-		if str[i:i+2] == `\x` {
-			i += 3
-		} else if str[i:i+2] == `\u` {
-			i += 5
-		} else if str[i:i+1] == `\` {
-			i += 1
+		if builder.Len() > length {
+			result = append(result, builder.String())
+			builder.Reset()
 		}
 	}
-	result = append(result, str[start:])
+	if builder.Len() > 0 {
+		result = append(result, builder.String())
+	}
+	if len(result) == 0 {
+		result = append(result, "")
+	}
 
 	return result
 }
