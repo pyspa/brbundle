@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/shibukawa/brbundle/brchi"
-	_ "github.com/shibukawa/brbundle/examples"
+	"go.pyspa.org/brbundle/brchi"
+	_ "go.pyspa.org/brbundle/examples"
 )
 
 func main() {

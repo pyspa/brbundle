@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 )
 
 type Compressor struct {

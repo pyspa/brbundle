@@ -8,7 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 )
 
 type Encryptor struct {

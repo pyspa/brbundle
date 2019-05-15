@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/shibukawa/brbundle/websupport"
+	"go.pyspa.org/brbundle/websupport"
 )
 
 func processInput(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPrefix string, entry Entry, callback func(writerTo io.WriterTo, etag string)) error {

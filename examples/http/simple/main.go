@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/shibukawa/brbundle/brhttp"
-	_ "github.com/shibukawa/brbundle/examples"
+	"go.pyspa.org/brbundle/brhttp"
+	_ "go.pyspa.org/brbundle/examples"
 )
 
 func main() {

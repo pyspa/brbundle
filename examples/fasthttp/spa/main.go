@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/buaazp/fasthttprouter"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brfasthttp"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brfasthttp"
 	"github.com/valyala/fasthttp"
 
-	_ "github.com/shibukawa/brbundle/examples"
+	_ "go.pyspa.org/brbundle/examples"
 )
 
 func main() {

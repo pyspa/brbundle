@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shibukawa/brbundle/brgin"
+	"go.pyspa.org/brbundle/brgin"
 
-	_ "github.com/shibukawa/brbundle/examples"
+	_ "go.pyspa.org/brbundle/examples"
 )
 
 func main() {

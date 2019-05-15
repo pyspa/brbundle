@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brhttp"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brhttp"
 	"github.com/stretchr/testify/assert"
 )
 

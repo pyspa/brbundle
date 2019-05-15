@@ -18,7 +18,7 @@ import (
 const embeddedSourceTemplate = `[[.BuildTag]]package [[.PackageName]]
 
 import (
-    "github.com/shibukawa/brbundle"
+    "go.pyspa.org/brbundle"
 )
 
 var [[.VariableName]] = [[.Content]]

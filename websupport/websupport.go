@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 )
 
 const DefaultQValue = 1.0

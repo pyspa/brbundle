@@ -9,7 +9,7 @@ web applications, mobile applications, JavaScript(Gopher.js), including debuggin
 ## Install
 
 ```sh
-$ go get github.com/shibukawa/brbundle/...
+$ go get go.pyspa.org/brbundle/...
 ```
 
 ## Bundle Type Flow Chart
@@ -80,7 +80,7 @@ embedded bundle or exe bundle, you don't have to call any function to load.
 
 ```go
 import (
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 	"image"
 	"image/png"
 )
@@ -105,7 +105,7 @@ BRBundle searches the contents with the following order:
 
 ```go
 import (
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 )
 
 func main() {
@@ -151,7 +151,7 @@ It doesn't provide ``http.FileSystem`` compatible interface because:
 
 ### ``net/http``
 
-``"github.com/shibukawa/brbundle/brhttp"`` contains ``http.Handler`` compatible API.
+``"go.pyspa.org/brbundle/brhttp"`` contains ``http.Handler`` compatible API.
 
 ```go
 package main
@@ -160,8 +160,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brhttp"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brhttp"
 )
 
 // The simplest sample
@@ -218,8 +218,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brecho"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brecho"
 )
 
 // The simplest sample
@@ -274,8 +274,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brchi"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brchi"
 )
 
 // Use with chi.Router
@@ -325,8 +325,8 @@ import (
 	"fmt"
 
 	"github.com/buaazp/fasthttprouter"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brfasthttp"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brfasthttp"
 	"github.com/valyala/fasthttp"
 )
 
@@ -385,8 +385,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/brgin"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/brgin"
 )
 
 // Use with gin's router

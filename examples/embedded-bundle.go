@@ -1,7 +1,7 @@
 package examples
 
 import (
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 )
 
 var bundle_4991df70be91db29a52477aa80d16c80 = []byte(

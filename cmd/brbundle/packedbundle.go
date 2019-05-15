@@ -4,7 +4,7 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"github.com/shibukawa/brbundle"
+	"go.pyspa.org/brbundle"
 	"io"
 	"path"
 	"runtime"

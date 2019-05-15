@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
-	"github.com/shibukawa/brbundle"
-	"github.com/shibukawa/brbundle/websupport"
+	"go.pyspa.org/brbundle"
+	"go.pyspa.org/brbundle/websupport"
 )
 
 func Mount(option ...brbundle.WebOption) func(echo.Context) error {

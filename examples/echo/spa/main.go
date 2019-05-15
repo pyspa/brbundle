@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/shibukawa/brbundle"
-	_ "github.com/shibukawa/brbundle/examples"
+	"go.pyspa.org/brbundle"
+	_ "go.pyspa.org/brbundle/examples"
 
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/shibukawa/brbundle/brecho"
+	"go.pyspa.org/brbundle/brecho"
 )
 
 func main() {
