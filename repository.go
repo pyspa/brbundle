@@ -139,14 +139,16 @@ func (r *Repository) RegisterFolder(path string, option ...Option) error {
 	return r.registerFolder(path, false, bo)
 }
 
-func (r *Repository) RegisterEncryptedFolder(path string, option ...Option) error {
+func (r *Repository) RegisterEncryptedFolder(path, key string, option ...Option) error {
 	var bo Option
 	if len(option) > 0 {
 		bo = option[0]
 	}
+	bo.DecryptoKey = key
 	if bo.Name == "" {
 		bo.Name = path
 	}
+
 	return r.registerFolder(path, true, bo)
 }
 
