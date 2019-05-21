@@ -53,12 +53,12 @@ func Traverse(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ig
 			if err != nil {
 				return err
 			}
-			if path == "." {
+			if rel == "." {
 				return nil
 			}
-			if ignoreMatcher != nil && ignoreMatcher.Match(rel, info.IsDir()) {
+			if ignoreMatcher != nil && ignoreMatcher.Match(path, info.IsDir()) {
 				ignored = append(ignored, rel)
-				return nil
+				return filepath.SkipDir
 			}
 			if _, match := splitBuildTag(info.Name(), buildTag); !match {
 				ignored = append(ignored, rel)

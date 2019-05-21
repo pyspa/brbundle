@@ -15,7 +15,6 @@ import (
 	"github.com/fatih/color"
 )
 
-
 func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPrefix string, date *time.Time, w *zip.Writer, lock *sync.Mutex, jobs <-chan Entry, wait chan<- struct{}) {
 	for entry := range jobs {
 		compressor.Init()
