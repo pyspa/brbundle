@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi"
+	"github.com/stretchr/testify/assert"
 	"go.pyspa.org/brbundle"
 	"go.pyspa.org/brbundle/brhttp"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMountWithChi(t *testing.T) {

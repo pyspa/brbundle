@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/dsnet/compress/brotli"
+	"github.com/stretchr/testify/assert"
 	"go.pyspa.org/brbundle"
 	"go.pyspa.org/brbundle/brhttp"
-	"github.com/stretchr/testify/assert"
 )
 
 func initRepo() *brbundle.Repository {

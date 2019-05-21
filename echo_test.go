@@ -8,9 +8,9 @@ import (
 
 	"github.com/dsnet/compress/brotli"
 	"github.com/labstack/echo"
+	"github.com/stretchr/testify/assert"
 	"go.pyspa.org/brbundle"
 	"go.pyspa.org/brbundle/brecho"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestEchoMount_NoBrotli(t *testing.T) {
@@ -82,4 +82,3 @@ func TestEchoMount_SPAOption(t *testing.T) {
 	assert.Equal(t, 200, rec.Code)
 	assert.True(t, strings.Contains(string(rec.Body.Bytes()), "<body>"))
 }
-
