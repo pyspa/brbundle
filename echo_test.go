@@ -82,3 +82,4 @@ func TestEchoMount_SPAOption(t *testing.T) {
 	assert.Equal(t, 200, rec.Code)
 	assert.True(t, strings.Contains(string(rec.Body.Bytes()), "<body>"))
 }
+
