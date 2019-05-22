@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
-	"go/format"
 	"os"
 	"strings"
 	"sync"
@@ -81,12 +80,7 @@ func embedded(brotli bool, encryptionKey []byte, buildTag, packageName string, d
 	if err != nil {
 		panic(err)
 	}
-	formattedSource, err := format.Source(source.Bytes())
-	if err != nil {
-		destFile.Write(source.Bytes())
-	} else {
-		destFile.Write(formattedSource)
-	}
+	destFile.Write(source.Bytes())
 	color.Cyan("\nDone\n\n")
 	return nil
 }

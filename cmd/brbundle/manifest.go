@@ -107,7 +107,7 @@ func packSubBundle(brotli bool, encryptionKey []byte, buildTag, destDirPath, src
 	}
 	hash := sha1.New()
 	mode := "Packed Bundle for manifest (" + cleanPath("", rel) + ")"
-	packedBundle(brotli, encryptionKey, buildTag, io.MultiWriter(out, hash), targetFolder, "", mode, date)
+	packedBundleShallow(brotli, encryptionKey, buildTag, io.MultiWriter(out, hash), targetFolder, "", mode, date)
 	out.Close()
 
 	lock.Lock()

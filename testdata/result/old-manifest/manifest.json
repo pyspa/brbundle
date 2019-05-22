@@ -1,0 +1,78 @@
+{
+    "2.2/main/apache2": {
+        "file": "d5b8c63b0963c8e04f91bc85496d34ce",
+        "sha1": "5078e695990c127eebcf9d2e424a4eab0db3ed4b"
+    },
+    "2.2/main/curl": {
+        "file": "22f316f667a240403d0e47751f3076d4",
+        "sha1": "6e5024289055120a37b7186e383d7a572e49d1c2"
+    },
+    "2.2/main/linux-vserver": {
+        "file": "3d8dc48e6029c0f2dee8b8a063e7a3c1",
+        "sha1": "472752a4faccc96b519d13b115bee63cdf8a79dc"
+    },
+    "2.2/main/openldap": {
+        "file": "5a255ecf61d067d7effe3108e9fe0682",
+        "sha1": "a1a468a08640837b0782afd25ec8d67dd545d251"
+    },
+    "2.2/main/openssl": {
+        "file": "dcf9739fea7cfc696893591583210cfe",
+        "sha1": "68c05c212c06998d9c215b7f447c362b9d58db00"
+    },
+    "2.2/main/openvpn": {
+        "file": "52b1084a5653f5f252a0187494f16478",
+        "sha1": "5bced02c8d1f57c4e62ee4dd41f035896e6b3d7b"
+    },
+    "2.2/main/php": {
+        "file": "64c39d5642ade656b3b15306a96f22e0",
+        "sha1": "19862cb80c00402d65c40bde7a31e42012220049"
+    },
+    "2.2/main/samba": {
+        "file": "6a094ca991c67e72e53276ffffab6905",
+        "sha1": "a5159fac09eee3a8ca88e004fbfca36aeb0cd904"
+    },
+    "2.3": {
+        "file": "1a18da63cbbfb49cb9616e6bfd35f662",
+        "sha1": "61c9cb62f5bb0e2eee29c3645677c3f7bb124c35"
+    },
+    "2.3/main": {
+        "file": "2252b5f816c1d4c1b130b7abea4ef2e6",
+        "sha1": "057c1841da2d598c44285e88450bf5a73bee0a7e"
+    },
+    "2.3/main/apache2": {
+        "file": "d7e49d7f6e7d58adcf8b3c834870943d",
+        "sha1": "352d74d8f81157fa5eaccf769f5a90fe8f50cc99"
+    },
+    "2.3/main/bind": {
+        "file": "31834782254efd87f76dab991bead5a9",
+        "sha1": "c14809a46f5b4e59fc5285ddcb9b6b532fe77386"
+    },
+    "2.3/main/cgit": {
+        "file": "1718dbd27d30d32500c846a3760a7e24",
+        "sha1": "a992ba55f571b19e575444a44602951f9df399ec"
+    },
+    "2.3/main/curl": {
+        "file": "065514dce0f5514df1e614a52cc2ffce",
+        "sha1": "95423722f20cc3c041d53a22d421e28bc11ea36f"
+    },
+    "2.3/main/linux-vserver": {
+        "file": "90718944569be79e371fd16170256c4d",
+        "sha1": "0bb869cf86e32fede856881dafb77a9a1d5fcdb4"
+    },
+    "2.3/main/openssl": {
+        "file": "771190df3ea31ace09fd4a470f56f5e1",
+        "sha1": "8b6592a46fe411a19db8750578276cb2f420a5ab"
+    },
+    "2.3/main/openvpn": {
+        "file": "dc87c9d6a7d5b59f9c6796f6a4e93d40",
+        "sha1": "4424a8facc9df2a24ad8115b34c55aacb1ba7b32"
+    },
+    "2.3/main/xen": {
+        "file": "2591e79c2eb4bba5f43e576611917358",
+        "sha1": "c6121f9609d885eb33792fcf575a50c70a2b7f43"
+    },
+    "2.3/main/zabbix": {
+        "file": "11c9b35fca6abef2af6530caafd85330",
+        "sha1": "09a9d6227ecf25c8b9cc236b2e9beeba50277208"
+    }
+}

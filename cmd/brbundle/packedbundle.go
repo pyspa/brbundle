@@ -96,6 +96,54 @@ func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io
 	return nil
 }
 
+func packedBundleShallow(brotli bool, encryptionKey []byte, buildTag string, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
+
+	e, err := NewEncryptor(encryptionKey)
+	if err != nil {
+		return errors.New("Can't create encryptor")
+	}
+
+	w := zip.NewWriter(outFile)
+	w.RegisterCompressor(brbundle.ZIPMethodSnappy, snappyCompressor)
+	defer w.Close()
+	w.SetComment(e.EncryptionFlag())
+	var lock sync.Mutex
+
+	bt := ""
+	if buildTag != "" {
+		bt = fmt.Sprintf(", Build Tag: %#v", buildTag)
+	}
+	ec := len(encryptionKey) != 0
+
+	if mode == "" {
+		color.Cyan("Packed Bundle Mode (Use Brotli: %v, Use Encyrption: %v%s)\n\n", brotli, ec, bt)
+	} else {
+		color.Cyan("%s Mode (Use Brotli: %v, Use Encyrption: %v%s)\n\n", mode, brotli, ec, bt)
+	}
+
+	paths, _, ignored := TraverseShallow(srcDirPath, buildTag)
+
+	wait := make(chan struct{})
+	for i := 0; i < runtime.NumCPU(); i++ {
+		encryptor, _ := NewEncryptor(encryptionKey)
+		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, w, &lock, paths, wait)
+	}
+
+	close(paths)
+
+	for i := 0; i < runtime.NumCPU(); i++ {
+		<-wait
+	}
+
+	for _, path := range ignored {
+		color.Yellow("  ignored: %s\n", path)
+	}
+	if mode == "" {
+		color.Cyan("\nDone\n\n")
+	}
+	return nil
+}
+
 func cleanPath(prefix, filePath string) string {
 	prefix = strings.ReplaceAll(prefix, `\`, "/")
 	filePath = strings.ReplaceAll(filePath, `\`, "/")

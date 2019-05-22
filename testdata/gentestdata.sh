@@ -52,3 +52,8 @@ mkdir testdata/raw-aes
 # simple data
 ./cmd/brbundle/brbundle embedded -p brbundle -o testdata/embedded_data_test_.go testdata/src-simple
 ./cmd/brbundle/brbundle pack testdata/simple.pb testdata/src-simple
+
+# manifest
+# new includes 3 new folders and one apache2 json is modified
+./cmd/brbundle/brbundle manifest -f testdata/result/old-manifest testdata/manifest-src/old 
+./cmd/brbundle/brbundle manifest -f testdata/result/new-manifest testdata/manifest-src/new 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,7 +59,7 @@ func Traverse(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ig
 			}
 			if ignoreMatcher != nil && ignoreMatcher.Match(path, info.IsDir()) {
 				ignored = append(ignored, rel)
-				return filepath.SkipDir
+				return nil
 			}
 			if _, match := splitBuildTag(info.Name(), buildTag); !match {
 				ignored = append(ignored, rel)
@@ -70,6 +71,49 @@ func Traverse(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ig
 			}
 			return nil
 		})
+	dirMap := make(map[string]bool)
+	entries = make(chan Entry, len(paths))
+	for i, path := range paths {
+		entries <- Entry{path, cleanPseudoPath(path, buildTag), infos[i]}
+		dir := filepath.Dir(path)
+		if dir != "." && !dirMap[dir] {
+			dirMap[dir] = true
+		}
+	}
+	for dir := range dirMap {
+		stat, _ := os.Stat(filepath.Join(srcDirPath, dir))
+		dirs = append(dirs, Entry{dir, cleanPseudoPath(dir, buildTag), stat})
+	}
+	return
+}
+
+func TraverseShallow(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ignored []string) {
+	ignoreMatcher, _ := gitignore.NewGitIgnore(filepath.Join(srcDirPath, ignoreSettingFile), srcDirPath)
+	var paths []string
+	var infos []os.FileInfo
+	infos, err := ioutil.ReadDir(srcDirPath)
+	if err != nil {
+		return
+	}
+	for _, info := range infos {
+		path := filepath.Join(srcDirPath, info.Name())
+		rel := info.Name()
+		if rel == "." {
+			continue
+		}
+		if ignoreMatcher != nil && ignoreMatcher.Match(path, info.IsDir()) {
+			ignored = append(ignored, rel)
+			continue
+		}
+		if _, match := splitBuildTag(info.Name(), buildTag); !match {
+			ignored = append(ignored, rel)
+			continue
+		}
+		if !info.IsDir() && rel != ignoreSettingFile {
+			paths = append(paths, rel)
+			infos = append(infos, info)
+		}
+	}
 	dirMap := make(map[string]bool)
 	entries = make(chan Entry, len(paths))
 	for i, path := range paths {
