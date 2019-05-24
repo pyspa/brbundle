@@ -2,7 +2,6 @@ package brbundle
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -287,8 +286,6 @@ func TestPackOptions(t *testing.T) {
 					expected, _ := ioutil.ReadFile(filepath.Join("testdata", "src", testfilepath))
 					entry, err := r.Find(testfilepath)
 					assert.Nil(t, err)
-					fmt.Println(entry, err)
-					fmt.Println(testcase.Name, testfilepath)
 					actual, err := entry.ReadAll()
 					assert.Equal(t, expected, actual)
 				})

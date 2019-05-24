@@ -46,24 +46,7 @@ func (p packedBundle) find(searchPath string) (FileEntry, error) {
 		return p.reader.File[i].Name >= searchPath
 	})
 	if i < len(p.reader.File) && p.reader.File[i].Name == searchPath {
-		decryptor, err := p.baseBundle.getDecryptor()
-		if err != nil {
-			return nil, err
-		}
-		file := p.reader.File[i]
-		var decompressor Decompressor
-		switch file.Comment[0:1] {
-		case UseBrotli:
-			decompressor = brotliDecompressor
-		case NotToCompress:
-			decompressor = nullDecompressor
-		}
-		return &packedFileEntry{
-			file:         file,
-			decompressor: decompressor,
-			decryptor:    decryptor,
-			logicalPath:  path.Clean("/" + path.Join(p.baseBundle.mountPoint, file.Name)),
-		}, nil
+		return newPackedFileEntry(p.reader.File[i], "", &p.baseBundle)
 	} else {
 		return nil, nil
 	}
@@ -77,6 +60,26 @@ func (p *packedBundle) close() {
 	if p.closer != nil {
 		p.closer.Close()
 	}
+}
+
+func newPackedFileEntry(file *zip.File, dir string, b *baseBundle) (*packedFileEntry, error) {
+	decryptor, err := b.getDecryptor()
+	if err != nil {
+		return nil, err
+	}
+	var decompressor Decompressor
+	switch file.Comment[0:1] {
+	case UseBrotli:
+		decompressor = brotliDecompressor
+	case NotToCompress:
+		decompressor = nullDecompressor
+	}
+	return &packedFileEntry{
+		file:         file,
+		decompressor: decompressor,
+		decryptor:    decryptor,
+		logicalPath:  path.Clean("/" + path.Join(b.mountPoint, dir, file.Name)),
+	}, nil
 }
 
 type packedFileEntry struct {

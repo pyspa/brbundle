@@ -3,7 +3,14 @@ package brbundle
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/golang-lru"
@@ -13,16 +20,17 @@ type BundleType int
 
 const (
 	FolderBundleType   BundleType = 0
-	PackedBundleType              = 1
-	ExeBundleType                 = 2
-	EmbeddedBundleType            = 3
+	ManifestBundleType            = 1
+	PackedBundleType              = 2
+	ExeBundleType                 = 3
+	EmbeddedBundleType            = 4
 )
 
 type Repository struct {
 	option  *ROption
 	init    bool
 	Cache   *lru.TwoQueueCache
-	bundles [4][]bundle
+	bundles [5][]bundle
 }
 
 type ROption struct {
@@ -111,10 +119,13 @@ func (r *Repository) SetDecryptoKeyToExeBundle(key string) error {
 }
 
 type Option struct {
-	DecryptoKey string
-	MountPoint  string
-	Name        string
-	Priority    int
+	DecryptoKey         string
+	MountPoint          string
+	Name                string
+	Priority            int
+	TempFolder          string
+	ResetDownloadFolder bool
+	ParallelDownload    int
 }
 
 func (r *Repository) RegisterBundle(path string, option ...Option) error {
@@ -150,6 +161,80 @@ func (r *Repository) RegisterEncryptedFolder(path, key string, option ...Option)
 	}
 
 	return r.registerFolder(path, true, bo)
+}
+
+func (r *Repository) RegisterRemoteManifest(manifestUrl string, option ...Option) (*Progress, error) {
+	var bo Option
+	if len(option) > 0 {
+		bo = option[0]
+	}
+	if bo.Name == "" {
+		bo.Name = manifestUrl
+	}
+	if bo.ParallelDownload == 0 {
+		bo.ParallelDownload = 6
+	}
+	workFolder := bo.TempFolder
+	if bo.TempFolder == "" {
+		workFolder = filepath.Join(os.TempDir(), "brbundle", url.PathEscape(manifestUrl))
+	}
+
+	if bo.ResetDownloadFolder {
+		os.RemoveAll(workFolder)
+	}
+	os.MkdirAll(workFolder, 0755)
+
+	oldManifest := make(map[string]*ManifestEntry)
+
+	oldManifestFile, err := os.Open(filepath.Join(workFolder, "manifest.json"))
+	if err == nil {
+		defer oldManifestFile.Close()
+		_ = json.NewDecoder(oldManifestFile).Decode(&oldManifest)
+	}
+	if !strings.HasSuffix(manifestUrl, "/") {
+		manifestUrl += "/"
+	}
+	fmt.Println(manifestUrl + "manifest.json")
+
+	newManifest := make(map[string]*ManifestEntry)
+	res, err := http.Get(manifestUrl + "manifest.json")
+	if err != nil {
+		return nil, errors.New("Server access error: cannot get new manifest.json")
+	}
+	manifestJson, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("Can't read new manifest.json body")
+	}
+	res.Body.Close()
+	err = json.Unmarshal(manifestJson, &newManifest)
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("Can't parse new manifest.json")
+	}
+
+	p := &Progress{
+		wait: make(chan struct{}),
+	}
+
+	for folder, entry := range newManifest {
+		if oldEntry, ok := oldManifest[folder]; ok {
+			if oldEntry.Sha1 == entry.Sha1 {
+				p.keepFiles = append(p.keepFiles, entry)
+			} else {
+				p.deleteFiles = append(p.deleteFiles, oldEntry)
+				p.downlodFiles = append(p.downlodFiles, entry)
+			}
+		} else {
+			p.downlodFiles = append(p.downlodFiles, entry)
+		}
+	}
+
+	go func() {
+		b := newManifestBundle(workFolder, bo, newManifest)
+		p.startDownload(r, b, manifestUrl, workFolder, manifestJson, bo.ParallelDownload)
+	}()
+	return p, nil
 }
 
 func (r *Repository) Unload(name string) error {

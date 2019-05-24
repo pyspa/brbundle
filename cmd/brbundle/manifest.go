@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"go.pyspa.org/brbundle"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,17 +13,10 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/monochromegane/go-gitignore"
 )
 
-type ManifestEntry struct {
-	File string `json:"file"`
-	Sha1 string `json:"sha1"`
-}
-
 func manifest(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPath string, date *time.Time) error {
-	ignoreMatcher, _ := gitignore.NewGitIgnore(filepath.Join(srcDirPath, ignoreSettingFile), srcDirPath)
+	ignoreMatcher := findGitIgnore(srcDirPath)
 	manifestFile, err := os.Create(filepath.Join(destDirPath, "manifest.json"))
 	if err != nil {
 		return err
@@ -45,13 +39,13 @@ func manifest(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPa
 			if ignoreMatcher != nil && ignoreMatcher.Match(path, true) {
 				return filepath.SkipDir
 			}
-			dirs, err := ioutil.ReadDir(path)
+			entries, err := ioutil.ReadDir(path)
 			if err != nil {
 				return err
 			}
 			hasFile := false
-			for _, dir := range dirs {
-				if !dir.IsDir() {
+			for _, entry := range entries {
+				if !entry.IsDir() && !ignoreMatcher.Match(filepath.Join(path, entry.Name()), false) {
 					hasFile = true
 					break
 				}
@@ -72,7 +66,7 @@ func manifest(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPa
 		}
 	}()
 
-	manifestSrc := make(map[string]*ManifestEntry)
+	manifestSrc := make(map[string]*brbundle.ManifestEntry)
 
 	var lock sync.RWMutex
 
@@ -92,13 +86,14 @@ func manifest(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPa
 	return nil
 }
 
-func packSubBundle(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPath, targetFolder string, date *time.Time, result map[string]*ManifestEntry, lock *sync.RWMutex) error {
+func packSubBundle(brotli bool, encryptionKey []byte, buildTag, destDirPath, srcDirPath, targetFolder string, date *time.Time, result map[string]*brbundle.ManifestEntry, lock *sync.RWMutex) error {
 	rel, err := filepath.Rel(srcDirPath, targetFolder)
 	if err != nil {
 		return err
 	}
 	h := md5.New()
 	io.WriteString(h, cleanPath("", rel))
+	fmt.Println("@@", cleanPath("", rel))
 	fileName := fmt.Sprintf("%x", h.Sum(nil))
 
 	out, err := os.Create(filepath.Join(destDirPath, fileName+".pb"))
@@ -112,7 +107,7 @@ func packSubBundle(brotli bool, encryptionKey []byte, buildTag, destDirPath, src
 
 	lock.Lock()
 	defer lock.Unlock()
-	result[cleanPath("", rel)] = &ManifestEntry{
+	result[cleanPath("", rel)] = &brbundle.ManifestEntry{
 		File: fileName,
 		Sha1: fmt.Sprintf("%x", hash.Sum(nil)),
 	}

@@ -44,8 +44,26 @@ func cleanPseudoPath(source, buildTag string) string {
 	return strings.Join(newFragments, string(os.PathSeparator))
 }
 
+func findGitIgnore(srcDirPath string) gitignore.IgnoreMatcher {
+	originalSrcDirPath := srcDirPath
+	for {
+		path := filepath.Join(srcDirPath, ignoreSettingFile)
+		if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
+			parentDir := filepath.Dir(srcDirPath)
+			if parentDir == srcDirPath {
+				return nil
+			}
+			srcDirPath = parentDir
+			continue
+		}
+		ignoreMatcher, _ := gitignore.NewGitIgnore(filepath.Join(srcDirPath, ignoreSettingFile), originalSrcDirPath)
+		return ignoreMatcher
+	}
+	return nil
+}
+
 func Traverse(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ignored []string) {
-	ignoreMatcher, _ := gitignore.NewGitIgnore(filepath.Join(srcDirPath, ignoreSettingFile), srcDirPath)
+	ignoreMatcher := findGitIgnore(srcDirPath)
 	var paths []string
 	var infos []os.FileInfo
 	filepath.Walk(srcDirPath,
@@ -88,7 +106,7 @@ func Traverse(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ig
 }
 
 func TraverseShallow(srcDirPath, buildTag string) (entries chan Entry, dirs []Entry, ignored []string) {
-	ignoreMatcher, _ := gitignore.NewGitIgnore(filepath.Join(srcDirPath, ignoreSettingFile), srcDirPath)
+	ignoreMatcher := findGitIgnore(srcDirPath)
 	var paths []string
 	var infos []os.FileInfo
 	infos, err := ioutil.ReadDir(srcDirPath)

@@ -29,31 +29,31 @@ mkdir testdata/raw-nocrypto
 mkdir testdata/raw-aes
 
 # embedded
-./cmd/brbundle/brbundle embedded                         -p brbundle -o testdata/result/embedded_br_noe_test.go  -x brotli/noenc testdata/src
-./cmd/brbundle/brbundle embedded -t windows -f           -p brbundle -o testdata/result/embedded_sn_noe_test.go -x sn/noenc    testdata/src
-./cmd/brbundle/brbundle embedded -t linux      -c ${KEY} -p brbundle -o testdata/result/embedded_br_aes_test.go  -x brotli/aes   testdata/src
-./cmd/brbundle/brbundle embedded -t darwin  -f -c ${KEY} -p brbundle -o testdata/result/embedded_sn_aes_test.go -x sn/aes      testdata/src
+./cmd/brbundle/brbundle embedded                         -p brbundle -o testdata/result/embedded_br_noe_test.go -x brotli/noenc -d 2019/05/23 testdata/src
+./cmd/brbundle/brbundle embedded -t windows -f           -p brbundle -o testdata/result/embedded_sn_noe_test.go -x sn/noenc     -d 2019/05/23 testdata/src
+./cmd/brbundle/brbundle embedded -t linux      -c ${KEY} -p brbundle -o testdata/result/embedded_br_aes_test.go -x brotli/aes   -d 2019/05/23 testdata/src
+./cmd/brbundle/brbundle embedded -t darwin  -f -c ${KEY} -p brbundle -o testdata/result/embedded_sn_aes_test.go -x sn/aes       -d 2019/05/23 testdata/src
 
 # pack
-./cmd/brbundle/brbundle pack              testdata/br-noe.pb  testdata/src
-./cmd/brbundle/brbundle pack -f           testdata/sn-noe.pb testdata/src
-./cmd/brbundle/brbundle pack    -c ${KEY} testdata/br-aes.pb  testdata/src
-./cmd/brbundle/brbundle pack -f -c ${KEY} testdata/sn-aes.pb testdata/src
+./cmd/brbundle/brbundle pack              -d 2019/05/23 testdata/br-noe.pb testdata/src
+./cmd/brbundle/brbundle pack -f           -d 2019/05/23 testdata/sn-noe.pb testdata/src
+./cmd/brbundle/brbundle pack    -c ${KEY} -d 2019/05/23 testdata/br-aes.pb testdata/src
+./cmd/brbundle/brbundle pack -f -c ${KEY} -d 2019/05/23 testdata/sn-aes.pb testdata/src
 
 # bundle
-./cmd/brbundle/brbundle bundle -t windows testdata/testexe/testexe.exe    testdata/src
-./cmd/brbundle/brbundle bundle -t linux   testdata/testexe/testexe.linux  testdata/src
-./cmd/brbundle/brbundle bundle -t darwin  testdata/testexe/testexe.darwin testdata/src
+./cmd/brbundle/brbundle bundle -t windows -d 2019/05/23 testdata/testexe/testexe.exe    testdata/src
+./cmd/brbundle/brbundle bundle -t linux   -d 2019/05/23 testdata/testexe/testexe.linux  testdata/src
+./cmd/brbundle/brbundle bundle -t darwin  -d 2019/05/23 testdata/testexe/testexe.darwin testdata/src
 
 # folder (for debugging)
-./cmd/brbundle/brbundle folder           testdata/content-nocrypto testdata/src
-./cmd/brbundle/brbundle folder -c ${KEY} testdata/content-aes      testdata/src
+./cmd/brbundle/brbundle folder           -d 2019/05/23 testdata/content-nocrypto testdata/src
+./cmd/brbundle/brbundle folder -c ${KEY} -d 2019/05/23 testdata/content-aes      testdata/src
 
 # simple data
-./cmd/brbundle/brbundle embedded -p brbundle -o testdata/embedded_data_test_.go testdata/src-simple
-./cmd/brbundle/brbundle pack testdata/simple.pb testdata/src-simple
+./cmd/brbundle/brbundle embedded -p brbundle -o testdata/embedded_data_test_.go -d 2019/05/23 testdata/src-simple
+./cmd/brbundle/brbundle pack -d 2019/05/23 testdata/simple.pb testdata/src-simple
 
 # manifest
 # new includes 3 new folders and one apache2 json is modified
-./cmd/brbundle/brbundle manifest -f testdata/result/old-manifest testdata/manifest-src/old 
-./cmd/brbundle/brbundle manifest -f testdata/result/new-manifest testdata/manifest-src/new 
+./cmd/brbundle/brbundle manifest -f -d 2019/05/23 testdata/result/old-manifest testdata/manifest-src/old 
+./cmd/brbundle/brbundle manifest -f -d 2019/05/23 testdata/result/new-manifest testdata/manifest-src/new 

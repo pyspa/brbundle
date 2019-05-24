@@ -49,7 +49,6 @@ func zipWorker(compressor *Compressor, encryptor *Encryptor, srcDirPath, dirPref
 }
 
 func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
-
 	e, err := NewEncryptor(encryptionKey)
 	if err != nil {
 		return errors.New("Can't create encryptor")
@@ -97,7 +96,6 @@ func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io
 }
 
 func packedBundleShallow(brotli bool, encryptionKey []byte, buildTag string, outFile io.Writer, srcDirPath, dirPrefix, mode string, date *time.Time) error {
-
 	e, err := NewEncryptor(encryptionKey)
 	if err != nil {
 		return errors.New("Can't create encryptor")
@@ -107,6 +105,8 @@ func packedBundleShallow(brotli bool, encryptionKey []byte, buildTag string, out
 	w.RegisterCompressor(brbundle.ZIPMethodSnappy, snappyCompressor)
 	defer w.Close()
 	w.SetComment(e.EncryptionFlag())
+	fmt.Println("@@", srcDirPath, e.EncryptionFlag())
+
 	var lock sync.Mutex
 
 	bt := ""
