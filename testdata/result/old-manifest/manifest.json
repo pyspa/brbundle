@@ -1,7 +1,7 @@
 {
     "2.2/main/apache2": {
         "file": "d5b8c63b0963c8e04f91bc85496d34ce",
-        "sha1": "b382d167bba9c51740332ee997d8d7d45376920f",
+        "sha1": "d65c89f3604e3ffdee123467c0acd6102b649cc7",
         "size": 0
     },
     "2.2/main/curl": {
@@ -21,7 +21,7 @@
     },
     "2.2/main/openssl": {
         "file": "dcf9739fea7cfc696893591583210cfe",
-        "sha1": "523919298d47c07def5bb413d51c34fae1b12090",
+        "sha1": "ea8d8e8ac08d1b059904497519171c3a8f7e33cd",
         "size": 0
     },
     "2.2/main/openvpn": {
@@ -31,7 +31,7 @@
     },
     "2.2/main/php": {
         "file": "64c39d5642ade656b3b15306a96f22e0",
-        "sha1": "3a715b968f4523c08ed7be2a933f943a0bf5ae1f",
+        "sha1": "7e1c33a8ca1a001cf7b39e875fe28d58be0d5e50",
         "size": 0
     },
     "2.2/main/samba": {
@@ -41,7 +41,7 @@
     },
     "2.3/main/apache2": {
         "file": "d7e49d7f6e7d58adcf8b3c834870943d",
-        "sha1": "ad26f7e98712ce00111aaeaade35babdca0c6afb",
+        "sha1": "fc615d9eef029f7b0e2fb41e8f4b737ffc4330cc",
         "size": 0
     },
     "2.3/main/bind": {

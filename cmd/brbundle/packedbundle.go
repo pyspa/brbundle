@@ -74,15 +74,17 @@ func packedBundle(brotli bool, encryptionKey []byte, buildTag string, outFile io
 
 	paths, _, ignored := Traverse(srcDirPath, buildTag)
 
+	parallelCount := 1 // runtime.NumCPU()
+
 	wait := make(chan struct{})
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < parallelCount; i++ {
 		encryptor, _ := NewEncryptor(encryptionKey)
 		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, w, &lock, paths, wait)
 	}
 
 	close(paths)
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < parallelCount; i++ {
 		<-wait
 	}
 
@@ -105,7 +107,6 @@ func packedBundleShallow(brotli bool, encryptionKey []byte, buildTag string, out
 	w.RegisterCompressor(brbundle.ZIPMethodSnappy, snappyCompressor)
 	defer w.Close()
 	w.SetComment(e.EncryptionFlag())
-	fmt.Println("@@", srcDirPath, e.EncryptionFlag())
 
 	var lock sync.Mutex
 
@@ -123,15 +124,17 @@ func packedBundleShallow(brotli bool, encryptionKey []byte, buildTag string, out
 
 	paths, _, ignored := TraverseShallow(srcDirPath, buildTag)
 
+	parallelCount := 1 // runtime.NumCPU()
+
 	wait := make(chan struct{})
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < parallelCount; i++ {
 		encryptor, _ := NewEncryptor(encryptionKey)
 		go zipWorker(NewCompressor(brotli, true), encryptor, srcDirPath, dirPrefix, date, w, &lock, paths, wait)
 	}
 
 	close(paths)
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < parallelCount; i++ {
 		<-wait
 	}
 

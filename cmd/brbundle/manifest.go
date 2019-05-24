@@ -93,7 +93,6 @@ func packSubBundle(brotli bool, encryptionKey []byte, buildTag, destDirPath, src
 	}
 	h := md5.New()
 	io.WriteString(h, cleanPath("", rel))
-	fmt.Println("@@", cleanPath("", rel))
 	fileName := fmt.Sprintf("%x", h.Sum(nil))
 
 	out, err := os.Create(filepath.Join(destDirPath, fileName+".pb"))

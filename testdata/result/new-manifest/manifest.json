@@ -1,7 +1,7 @@
 {
     "2.2/main/apache2": {
         "file": "d5b8c63b0963c8e04f91bc85496d34ce",
-        "sha1": "0cfb6ce164be57393b853ec5cf055d5856540917",
+        "sha1": "d65c89f3604e3ffdee123467c0acd6102b649cc7",
         "size": 0
     },
     "2.2/main/curl": {
@@ -31,7 +31,7 @@
     },
     "2.2/main/php": {
         "file": "64c39d5642ade656b3b15306a96f22e0",
-        "sha1": "3a715b968f4523c08ed7be2a933f943a0bf5ae1f",
+        "sha1": "7e1c33a8ca1a001cf7b39e875fe28d58be0d5e50",
         "size": 0
     },
     "2.2/main/samba": {
@@ -76,7 +76,7 @@
     },
     "2.3/main/php": {
         "file": "1444a19856a3e853ffb1e2eaf0729295",
-        "sha1": "e456462181ecf283461711685a4666754852df95",
+        "sha1": "f3682348ec24a357abd3e7c245eba6949809cb3b",
         "size": 0
     },
     "2.3/main/samba": {
