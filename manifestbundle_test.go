@@ -34,7 +34,7 @@ func TestManifestInitialDownload(t *testing.T) {
 		return
 	}
 	// At first time, brbundle downloads all entries.
-	assert.Equal(t, 19, len(p.DownloadFiles()))
+	assert.Equal(t, 17, len(p.DownloadFiles()))
 	assert.Equal(t, 0, len(p.DeleteFiles()))
 	assert.Equal(t, 0, len(p.KeepFiles()))
 
@@ -82,9 +82,9 @@ func TestManifestUpdate(t *testing.T) {
 		}
 
 		// At second time, brbundle downloads new&updated entries only.
-		assert.Equal(t, 19, len(p.DownloadFiles()))
-		assert.Equal(t, 0, len(p.DeleteFiles()))
-		assert.Equal(t, 0, len(p.KeepFiles()))
+		assert.Equal(t, 4, len(p.DownloadFiles()))
+		assert.Equal(t, 1, len(p.DeleteFiles()))
+		assert.Equal(t, 16, len(p.KeepFiles()))
 
 		p.Wait()
 

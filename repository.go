@@ -194,7 +194,6 @@ func (r *Repository) RegisterRemoteManifest(manifestUrl string, option ...Option
 	if !strings.HasSuffix(manifestUrl, "/") {
 		manifestUrl += "/"
 	}
-	fmt.Println(manifestUrl + "manifest.json")
 
 	newManifest := make(map[string]*ManifestEntry)
 	res, err := http.Get(manifestUrl + "manifest.json")
