@@ -64,7 +64,6 @@ func TestManifestUpdate(t *testing.T) {
 		}
 
 		p.Wait()
-
 	}
 
 	{
@@ -96,4 +95,24 @@ func TestManifestUpdate(t *testing.T) {
 		body, _ := e.ReadAll()
 		assert.True(t, strings.Contains(string(body), `"IssueID": 227`))
 	}
+}
+
+func TestManifest_Dirs(t *testing.T) {
+	r := brbundle.NewRepository()
+	{
+		ts := initServer("./testdata/result/old-manifest")
+		defer ts.Close()
+
+		p, err := r.RegisterRemoteManifest(ts.URL, brbundle.Option{
+			TempFolder:          filepath.Join(os.TempDir(), "read-test-2"),
+			ResetDownloadFolder: true,
+		})
+		if err != nil {
+			assert.Nil(t, err)
+			return
+		}
+		p.Wait()
+	}
+	dirs := r.Dirs()
+	assert.Equal(t, 17, len(dirs))
 }

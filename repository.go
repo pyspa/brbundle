@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/golang-lru"
@@ -290,4 +291,47 @@ func (r *Repository) Find(candidatePaths ...string) (FileEntry, error) {
 		}
 	}
 	return nil, fmt.Errorf("Asset %s is not in bundles", strings.Join(candidatePaths, ", "))
+}
+
+type dirEntry struct {
+	name    string
+	bundles []bundle
+}
+
+func (r *Repository) Dirs() []string {
+	dirMap := make(map[string]*dirEntry)
+	for _, bundles := range r.bundles {
+		for _, bundle := range bundles {
+			dirNames := bundle.dirs()
+			for _, dirName := range dirNames {
+				if entry, ok := dirMap[dirName]; ok {
+					entry.bundles = append(entry.bundles, bundle)
+				} else {
+					entry = &dirEntry{
+						name: dirName,
+					}
+					entry.bundles = append(entry.bundles, bundle)
+					dirMap[dirName] = entry
+				}
+			}
+		}
+	}
+	dirNames := make([]string, len(dirMap))
+	i := 0
+	for name := range dirMap {
+		dirNames[i] = name
+		i++
+	}
+	sort.Strings(dirNames)
+	return dirNames
+}
+
+func (r *Repository) FilesInDir(dirPath string) ([]FileEntry, error) {
+	return nil, nil
+}
+
+type WalkFunc func(path string, info os.FileInfo, err error) error
+
+func (r *Repository) Walk(root string, walkFn WalkFunc) error {
+	return nil
 }

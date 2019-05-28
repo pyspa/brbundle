@@ -86,9 +86,8 @@ func TestRepositoryFolderBundle(t *testing.T) {
 		OmitEmbeddedBundle:     true,
 	})
 	err := r.RegisterFolder("testdata/src-simple")
-	assert.Nil(t, err)
 	if err != nil {
-		t.Log(err)
+		assert.Nil(t, err)
 		return
 	}
 	f, err := r.Find("a.txt")
@@ -276,9 +275,8 @@ func TestPackOptions(t *testing.T) {
 					DecryptoKey: testcase.DecryptoKey,
 				},
 			)
-			assert.Nil(t, err)
 			if err != nil {
-				t.Log(err)
+				assert.Nil(t, err)
 				return
 			}
 			for _, testfilepath := range testfilepaths {
@@ -292,4 +290,68 @@ func TestPackOptions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRepository_PackedFile_Dirs1(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err := r.RegisterBundle(filepath.Join("testdata", "br-noe.pb"))
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	dirs := r.Dirs()
+	assert.Equal(t, []string{"", "subfolder"}, dirs)
+}
+
+func TestRepository_PackedFile_Dirs2(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err := r.RegisterBundle(filepath.Join("testdata", "br-noe.pb"), Option{
+		MountPoint: "mount",
+	})
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	dirs := r.Dirs()
+	assert.Equal(t, []string{"mount", "mount/subfolder"}, dirs)
+}
+
+func TestRepository_Folder_Dirs1(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err := r.RegisterFolder("testdata/src")
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	dirs := r.Dirs()
+	assert.Equal(t, []string{"", "empty", "subfolder", "tagstest"}, dirs)
+}
+
+func TestRepository_Folder_Dirs2(t *testing.T) {
+	r := NewRepository(ROption{
+		OmitEnvVarFolderBundle: true,
+		OmitExeBundle:          true,
+		OmitEmbeddedBundle:     true,
+	})
+	err := r.RegisterFolder("testdata/src", Option{
+		MountPoint: "mount",
+	})
+	if err != nil {
+		assert.Nil(t, err)
+		return
+	}
+	dirs := r.Dirs()
+	assert.Equal(t, []string{"mount", "mount/empty", "mount/subfolder", "mount/tagstest"}, dirs)
 }

@@ -54,12 +54,33 @@ func (f folderBundle) find(searchPath string) (FileEntry, error) {
 	}, nil
 }
 
-func (f folderBundle) readdir(path string) []FileEntry {
-	panic("implement me")
-}
-
 func (f folderBundle) close() {
 	// do nothing
+}
+
+func (f folderBundle) dirs() []string {
+	var dirs []string
+	filepath.Walk(f.rootFolder, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			rel, err := filepath.Rel(f.rootFolder, path)
+			if err != nil {
+				return err
+			}
+			if rel == "." {
+				dirs = append(dirs, strings.TrimSuffix(f.mountPoint, "/"))
+			} else if f.mountPoint == "" {
+				dirs = append(dirs, strings.ReplaceAll(rel, `\`, "/"))
+			} else {
+				dirs = append(dirs, f.mountPoint+strings.ReplaceAll(rel, `\`, "/"))
+			}
+		}
+		return nil
+	})
+	return dirs
+}
+
+func (f folderBundle) filesInDir(dirName string) []string {
+	return nil
 }
 
 type folderFileEntry struct {

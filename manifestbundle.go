@@ -2,13 +2,13 @@ package brbundle
 
 import (
 	"archive/zip"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"sync"
 )
 
@@ -151,10 +151,20 @@ func (m manifestBundle) find(path string) (FileEntry, error) {
 	return nil, nil
 }
 
-func (manifestBundle) readdir(path string) []FileEntry {
-	fmt.Println("manifestBundle.readdir", path)
-	panic("implement me")
+func (manifestBundle) close() {
 }
 
-func (manifestBundle) close() {
+func (m manifestBundle) dirs() []string {
+	dirNames := make([]string, len(m.folders))
+	i := 0
+	for name := range m.folders {
+		dirNames[i] = name
+		i++
+	}
+	sort.Strings(dirNames)
+	return dirNames
+}
+
+func (m manifestBundle) filesInDir(dirName string) []string {
+	return nil
 }

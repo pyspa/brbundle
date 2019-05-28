@@ -52,14 +52,35 @@ func (p packedBundle) find(searchPath string) (FileEntry, error) {
 	}
 }
 
-func (packedBundle) readdir(path string) []FileEntry {
-	panic("implement me")
-}
-
 func (p *packedBundle) close() {
 	if p.closer != nil {
 		p.closer.Close()
 	}
+}
+
+func (p packedBundle) dirs() []string {
+	dirNameMap := make(map[string]bool)
+	for _, f := range p.reader.File {
+		fullPath := path.Join(p.mountPoint, f.Name)
+		i := strings.LastIndex(fullPath, "/")
+		if i == -1 {
+			dirNameMap[""] = true
+		} else {
+			dirNameMap[fullPath[:i]] = true
+		}
+	}
+	dirNames := make([]string, len(dirNameMap))
+	i := 0
+	for name := range dirNameMap {
+		dirNames[i] = name
+		i++
+	}
+	sort.Strings(dirNames)
+	return dirNames
+}
+
+func (p packedBundle) filesInDir(dirName string) []string {
+	return nil
 }
 
 func newPackedFileEntry(file *zip.File, dir string, b *baseBundle) (*packedFileEntry, error) {

@@ -77,7 +77,7 @@ func parseKeyAndDate(keySrc, dateSrc string) (cryptoKey []byte, date *time.Time,
 }
 
 func main() {
-	kingpin.Version("0.0.2")
+	kingpin.Version("1.0.0")
 	parse := kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	var err error

@@ -46,8 +46,8 @@ mkdir testdata/raw-aes
 ./cmd/brbundle/brbundle bundle -t darwin  -d 2019/05/23 testdata/testexe/testexe.darwin testdata/src
 
 # folder (for debugging)
-./cmd/brbundle/brbundle folder           -d 2019/05/23 testdata/content-nocrypto testdata/src
-./cmd/brbundle/brbundle folder -c ${KEY} -d 2019/05/23 testdata/content-aes      testdata/src
+./cmd/brbundle/brbundle folder           testdata/content-nocrypto testdata/src
+./cmd/brbundle/brbundle folder -c ${KEY} testdata/content-aes      testdata/src
 
 # simple data
 ./cmd/brbundle/brbundle embedded -p brbundle -o testdata/embedded_data_test_.go -d 2019/05/23 testdata/src-simple

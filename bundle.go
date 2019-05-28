@@ -10,11 +10,12 @@ import (
 
 type bundle interface {
 	find(path string) (FileEntry, error)
-	readdir(path string) []FileEntry
 	close()
 	setDecryptionKey(key string) error
 	getName() string
 	getMountPoint() string
+	dirs() []string
+	filesInDir(dirName string) []string
 }
 
 type baseBundle struct {
