@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -110,9 +111,14 @@ type manifestBundle struct {
 }
 
 func newManifestBundle(parentFolderPath string, o Option, files map[string]*ManifestEntry) *manifestBundle {
+	mountPoint := o.MountPoint
+	if mountPoint != "" && !strings.HasSuffix(mountPoint, "/") {
+		mountPoint = mountPoint + "/"
+	}
+
 	bundle := &manifestBundle{
 		baseBundle: baseBundle{
-			mountPoint:    o.MountPoint,
+			mountPoint:    mountPoint,
 			name:          o.Name,
 			decryptorType: NotToEncrypto,
 		},
@@ -158,7 +164,7 @@ func (m manifestBundle) dirs() []string {
 	dirNames := make([]string, len(m.folders))
 	i := 0
 	for name := range m.folders {
-		dirNames[i] = name
+		dirNames[i] = m.mountPoint + name
 		i++
 	}
 	sort.Strings(dirNames)
@@ -166,5 +172,24 @@ func (m manifestBundle) dirs() []string {
 }
 
 func (m manifestBundle) filesInDir(dirName string) []string {
-	return nil
+	if !strings.HasPrefix(dirName, m.mountPoint) {
+		return nil
+	}
+	dirName = dirName[len(m.mountPoint) : len(dirName)-1]
+	folder, ok := m.folders[dirName]
+	if !ok {
+		return nil
+	}
+	reader, err := zip.OpenReader(folder)
+	defer reader.Close()
+	if err != nil {
+		return nil
+	}
+	var fileNames []string
+	for _, f := range reader.File {
+		fileNames = append(fileNames, f.Name)
+	}
+	sort.Strings(fileNames)
+
+	return fileNames
 }

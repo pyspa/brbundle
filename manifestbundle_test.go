@@ -116,3 +116,106 @@ func TestManifest_Dirs(t *testing.T) {
 	dirs := r.Dirs()
 	assert.Equal(t, 17, len(dirs))
 }
+
+func TestRepository_Manifest(t *testing.T) {
+	testcases := []struct {
+		Name       string
+		MountPoint string
+		Dirs       []string
+		TestDir    string
+		FilesInDir []string
+	}{
+		{
+			"no mount point",
+			"",
+			[]string{
+				"2.2/main/apache2",
+				"2.2/main/curl",
+				"2.2/main/linux-vserver",
+				"2.2/main/openldap",
+				"2.2/main/openssl",
+				"2.2/main/openvpn",
+				"2.2/main/php",
+				"2.2/main/samba",
+				"2.3/main/apache2",
+				"2.3/main/bind",
+				"2.3/main/cgit",
+				"2.3/main/curl",
+				"2.3/main/linux-vserver",
+				"2.3/main/openssl",
+				"2.3/main/openvpn",
+				"2.3/main/xen",
+				"2.3/main/zabbix",
+			},
+			"2.2/main/apache2",
+			[]string{
+				"CVE-2011-3368.json",
+				"CVE-2011-3607.json",
+				"CVE-2012-0021.json",
+				"CVE-2012-0031.json",
+				"CVE-2012-0053.json",
+			},
+		},
+		{
+			"has mount point",
+			"mount",
+			[]string{
+				"mount/2.2/main/apache2",
+				"mount/2.2/main/curl",
+				"mount/2.2/main/linux-vserver",
+				"mount/2.2/main/openldap",
+				"mount/2.2/main/openssl",
+				"mount/2.2/main/openvpn",
+				"mount/2.2/main/php",
+				"mount/2.2/main/samba",
+				"mount/2.3/main/apache2",
+				"mount/2.3/main/bind",
+				"mount/2.3/main/cgit",
+				"mount/2.3/main/curl",
+				"mount/2.3/main/linux-vserver",
+				"mount/2.3/main/openssl",
+				"mount/2.3/main/openvpn",
+				"mount/2.3/main/xen",
+				"mount/2.3/main/zabbix",
+			},
+			"mount/2.2/main/apache2",
+			[]string{
+				"CVE-2011-3368.json",
+				"CVE-2011-3607.json",
+				"CVE-2012-0021.json",
+				"CVE-2012-0031.json",
+				"CVE-2012-0053.json",
+			},
+		},
+	}
+	for _, testcase := range testcases {
+		t.Run(testcase.Name, func(t *testing.T) {
+			r := brbundle.NewRepository(brbundle.ROption{
+				OmitEnvVarFolderBundle: true,
+				OmitExeBundle:          true,
+				OmitEmbeddedBundle:     true,
+			})
+			{
+				ts := initServer("./testdata/result/old-manifest")
+				defer ts.Close()
+
+				p, err := r.RegisterRemoteManifest(ts.URL, brbundle.Option{
+					TempFolder:          filepath.Join(os.TempDir(), "read-test-2"),
+					ResetDownloadFolder: true,
+					MountPoint:          testcase.MountPoint,
+				})
+				if err != nil {
+					assert.Nil(t, err)
+					return
+				}
+				p.Wait()
+			}
+
+			dirs := r.Dirs()
+			assert.Equal(t, testcase.Dirs, dirs)
+
+			files := r.FilesInDir(testcase.TestDir)
+			assert.Equal(t, testcase.FilesInDir, files)
+		})
+	}
+}

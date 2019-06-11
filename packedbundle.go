@@ -80,7 +80,20 @@ func (p packedBundle) dirs() []string {
 }
 
 func (p packedBundle) filesInDir(dirName string) []string {
-	return nil
+	if !strings.HasPrefix(dirName, p.mountPoint) {
+		return nil
+	}
+	var files []string
+	for _, file := range p.reader.File {
+		fullPath := path.Join(p.mountPoint, file.Name)
+		if strings.HasPrefix(fullPath, dirName) {
+			remained := fullPath[len(dirName):]
+			if !strings.Contains(remained, "/") {
+				files = append(files, remained)
+			}
+		}
+	}
+	return files
 }
 
 func newPackedFileEntry(file *zip.File, dir string, b *baseBundle) (*packedFileEntry, error) {

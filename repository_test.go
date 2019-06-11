@@ -292,66 +292,96 @@ func TestPackOptions(t *testing.T) {
 	}
 }
 
-func TestRepository_PackedFile_Dirs1(t *testing.T) {
-	r := NewRepository(ROption{
-		OmitEnvVarFolderBundle: true,
-		OmitExeBundle:          true,
-		OmitEmbeddedBundle:     true,
-	})
-	err := r.RegisterBundle(filepath.Join("testdata", "br-noe.pb"))
-	if err != nil {
-		assert.Nil(t, err)
-		return
+func TestRepository_PackedFile(t *testing.T) {
+	testcases := []struct {
+		Name       string
+		MountPoint string
+		Dirs       []string
+		TestDir    string
+		FilesInDir []string
+	}{
+		{
+			"no mount point",
+			"",
+			[]string{"", "subfolder"},
+			"subfolder",
+			[]string{"file-in-subfolder.txt"},
+		},
+		{
+			"has mount point",
+			"mount",
+			[]string{"mount", "mount/subfolder"},
+			"mount/subfolder",
+			[]string{"file-in-subfolder.txt"},
+		},
 	}
-	dirs := r.Dirs()
-	assert.Equal(t, []string{"", "subfolder"}, dirs)
+	for _, testcase := range testcases {
+		t.Run(testcase.Name, func(t *testing.T) {
+			r := NewRepository(ROption{
+				OmitEnvVarFolderBundle: true,
+				OmitExeBundle:          true,
+				OmitEmbeddedBundle:     true,
+			})
+			err := r.RegisterBundle(filepath.Join("testdata", "br-noe.pb"), Option{
+				MountPoint: testcase.MountPoint,
+			})
+			if err != nil {
+				assert.Nil(t, err)
+				return
+			}
+			dirs := r.Dirs()
+			assert.Equal(t, testcase.Dirs, dirs)
+
+			files := r.FilesInDir(testcase.TestDir)
+			assert.Equal(t, testcase.FilesInDir, files)
+		})
+	}
 }
 
-func TestRepository_PackedFile_Dirs2(t *testing.T) {
-	r := NewRepository(ROption{
-		OmitEnvVarFolderBundle: true,
-		OmitExeBundle:          true,
-		OmitEmbeddedBundle:     true,
-	})
-	err := r.RegisterBundle(filepath.Join("testdata", "br-noe.pb"), Option{
-		MountPoint: "mount",
-	})
-	if err != nil {
-		assert.Nil(t, err)
-		return
+func TestRepository_Folder(t *testing.T) {
+	testcases := []struct {
+		Name       string
+		MountPoint string
+		Dirs       []string
+		TestDir    string
+		FilesInDir []string
+	}{
+		{
+			"no mount point",
+			"",
+			[]string{"", "empty", "subfolder", "tagstest"},
+			"subfolder",
+			[]string{"file-in-subfolder.txt"},
+		},
+		{
+			"has mount point",
+			"mount",
+			[]string{"mount", "mount/empty", "mount/subfolder", "mount/tagstest"},
+			"mount/subfolder",
+			[]string{"file-in-subfolder.txt"},
+		},
 	}
-	dirs := r.Dirs()
-	assert.Equal(t, []string{"mount", "mount/subfolder"}, dirs)
-}
+	for _, testcase := range testcases {
+		t.Run(testcase.Name, func(t *testing.T) {
+			r := NewRepository(ROption{
+				OmitEnvVarFolderBundle: true,
+				OmitExeBundle:          true,
+				OmitEmbeddedBundle:     true,
+			})
 
-func TestRepository_Folder_Dirs1(t *testing.T) {
-	r := NewRepository(ROption{
-		OmitEnvVarFolderBundle: true,
-		OmitExeBundle:          true,
-		OmitEmbeddedBundle:     true,
-	})
-	err := r.RegisterFolder("testdata/src")
-	if err != nil {
-		assert.Nil(t, err)
-		return
-	}
-	dirs := r.Dirs()
-	assert.Equal(t, []string{"", "empty", "subfolder", "tagstest"}, dirs)
-}
+			err := r.RegisterFolder("testdata/src", Option{
+				MountPoint: testcase.MountPoint,
+			})
+			if err != nil {
+				assert.Nil(t, err)
+				return
+			}
 
-func TestRepository_Folder_Dirs2(t *testing.T) {
-	r := NewRepository(ROption{
-		OmitEnvVarFolderBundle: true,
-		OmitExeBundle:          true,
-		OmitEmbeddedBundle:     true,
-	})
-	err := r.RegisterFolder("testdata/src", Option{
-		MountPoint: "mount",
-	})
-	if err != nil {
-		assert.Nil(t, err)
-		return
+			dirs := r.Dirs()
+			assert.Equal(t, testcase.Dirs, dirs)
+
+			files := r.FilesInDir(testcase.TestDir)
+			assert.Equal(t, testcase.FilesInDir, files)
+		})
 	}
-	dirs := r.Dirs()
-	assert.Equal(t, []string{"mount", "mount/empty", "mount/subfolder", "mount/tagstest"}, dirs)
 }

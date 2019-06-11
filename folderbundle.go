@@ -80,7 +80,22 @@ func (f folderBundle) dirs() []string {
 }
 
 func (f folderBundle) filesInDir(dirName string) []string {
-	return nil
+	if !strings.HasPrefix(dirName, f.mountPoint) {
+		return nil
+	}
+	dirName = dirName[len(f.mountPoint):]
+	dirs, err := ioutil.ReadDir(filepath.Join(f.rootFolder, dirName))
+	if err != nil {
+		return nil
+	}
+	var result []string
+	for _, dir := range dirs {
+		if dir.IsDir() {
+			continue
+		}
+		result = append(result, dir.Name())
+	}
+	return result
 }
 
 type folderFileEntry struct {

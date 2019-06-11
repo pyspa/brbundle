@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/hashicorp/golang-lru"
@@ -299,35 +298,50 @@ type dirEntry struct {
 }
 
 func (r *Repository) Dirs() []string {
-	dirMap := make(map[string]*dirEntry)
+	var allDirNames [][]string
+	size := 0
 	for _, bundles := range r.bundles {
 		for _, bundle := range bundles {
 			dirNames := bundle.dirs()
-			for _, dirName := range dirNames {
-				if entry, ok := dirMap[dirName]; ok {
-					entry.bundles = append(entry.bundles, bundle)
-				} else {
-					entry = &dirEntry{
-						name: dirName,
-					}
-					entry.bundles = append(entry.bundles, bundle)
-					dirMap[dirName] = entry
-				}
+			if len(dirNames) > 0 {
+				allDirNames = append(allDirNames, dirNames)
+				size += len(dirNames)
 			}
 		}
 	}
-	dirNames := make([]string, len(dirMap))
-	i := 0
-	for name := range dirMap {
-		dirNames[i] = name
-		i++
-	}
-	sort.Strings(dirNames)
-	return dirNames
+	var lastName = "//////"
+	result := make([]string, 0, size)
+	iterateOverStringSlices(func(dirName string, i int) {
+		if dirName != lastName {
+			result = append(result, dirName)
+			lastName = dirName
+		}
+	}, allDirNames...)
+	return result
 }
 
-func (r *Repository) FilesInDir(dirPath string) ([]FileEntry, error) {
-	return nil, nil
+func (r *Repository) FilesInDir(dirPath string) []string {
+	if !strings.HasSuffix(dirPath, "/") {
+		dirPath = dirPath + "/"
+	}
+	var allFiles [][]string
+	size := 0
+	for _, bundles := range r.bundles {
+		for _, bundle := range bundles {
+			files := bundle.filesInDir(dirPath)
+			allFiles = append(allFiles, files)
+			size += len(files)
+		}
+	}
+	var lastName = "//////"
+	result := make([]string, 0, len(allFiles))
+	iterateOverStringSlices(func(dirName string, i int) {
+		if dirName != lastName {
+			result = append(result, dirName)
+			lastName = dirName
+		}
+	}, allFiles...)
+	return result
 }
 
 type WalkFunc func(path string, info os.FileInfo, err error) error
