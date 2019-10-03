@@ -298,6 +298,7 @@ type dirEntry struct {
 }
 
 func (r *Repository) Dirs() []string {
+	r.lazyInit()
 	var allDirNames [][]string
 	size := 0
 	for _, bundles := range r.bundles {
@@ -321,9 +322,11 @@ func (r *Repository) Dirs() []string {
 }
 
 func (r *Repository) FilesInDir(dirPath string) []string {
-	if !strings.HasSuffix(dirPath, "/") {
+	r.lazyInit()
+	if dirPath != "" && !strings.HasSuffix(dirPath, "/") {
 		dirPath = dirPath + "/"
 	}
+	fmt.Println("test", dirPath)
 	var allFiles [][]string
 	size := 0
 	for _, bundles := range r.bundles {
