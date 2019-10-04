@@ -1,9 +1,11 @@
 .DS_Store
 .idea
+*.pb
 testdata/content-*
+testdata/result
 testdata/testexe/testexe.darwin
 testdata/testexe/testexe.exe
 testdata/testexe/testexe.linux
+testdata/embedded_data_test_.go 
 cmd/brbundle/brbundle
 cmd/brbundle/brbundle.exe
-embedded_data_test_.go 

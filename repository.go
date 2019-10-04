@@ -326,7 +326,6 @@ func (r *Repository) FilesInDir(dirPath string) []string {
 	if dirPath != "" && !strings.HasSuffix(dirPath, "/") {
 		dirPath = dirPath + "/"
 	}
-	fmt.Println("test", dirPath)
 	var allFiles [][]string
 	size := 0
 	for _, bundles := range r.bundles {
