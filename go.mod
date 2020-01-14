@@ -7,7 +7,7 @@ require (
 	github.com/buaazp/fasthttprouter v0.1.1
 	github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
 	github.com/fatih/color v1.7.0
-	github.com/gabriel-vasile/mimetype v0.3.3
+	github.com/gabriel-vasile/mimetype v1.0.2
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/gin v1.3.0
 	github.com/go-chi/chi v4.0.2+incompatible

@@ -150,7 +150,11 @@ func (f folderFileEntry) Path() string {
 func (f folderFileEntry) EtagAndContentType() (string, string) {
 	size := int(f.info.Size())
 	if f.contentType == "" {
-		f.contentType, _, _ = mimetype.DetectFile(f.filePath)
+		if m, err := mimetype.DetectFile(f.filePath); err != nil {
+			f.contentType = m.String()
+		} else {
+			f.contentType = "application/octet-stream"
+		}
 	}
 	return fmt.Sprintf("%x-%x", size, f.info.ModTime().Unix()), f.contentType
 }

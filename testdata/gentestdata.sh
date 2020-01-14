@@ -55,5 +55,7 @@ mkdir testdata/raw-aes
 
 # manifest
 # new includes 3 new folders and one apache2 json is modified
+mkdir testdata/result/old-manifest
+mkdir testdata/result/new-manifest
 ./cmd/brbundle/brbundle manifest -f -d 2019/05/23 testdata/result/old-manifest testdata/manifest-src/old 
 ./cmd/brbundle/brbundle manifest -f -d 2019/05/23 testdata/result/new-manifest testdata/manifest-src/new 

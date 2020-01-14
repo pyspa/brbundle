@@ -114,7 +114,7 @@ func TestManifest_Dirs(t *testing.T) {
 		p.Wait()
 	}
 	dirs := r.Dirs()
-	assert.Equal(t, 17, len(dirs))
+	assert.Equal(t, 18, len(dirs))
 }
 
 func TestRepository_Manifest(t *testing.T) {
