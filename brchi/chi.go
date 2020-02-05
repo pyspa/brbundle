@@ -14,7 +14,9 @@ func Mount(option ...brbundle.WebOption) http.HandlerFunc {
 
 	return func (w http.ResponseWriter, r *http.Request) {
 		p := chi.URLParam(r, "*")
-
+		if p == "" {
+			p = r.URL.Path
+		}
 		file, found, redirectDir := websupport.FindFile(p, o)
 		if redirectDir {
 			http.Redirect(w, r, "./", http.StatusFound)
