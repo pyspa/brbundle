@@ -21,7 +21,7 @@ func MakeCommentString(compressorFlag, filePath string, info os.FileInfo) string
 			mimeType = strings.Replace(mimeType, "text/plain", "application/javascript", 1)
 		} else if strings.HasSuffix(filePath, ".css") {
 			// github.com/gabriel-vasile/mimetype doesn't support css
-			mimeType = strings.Replace(mimeType, "text/plain", "application/css", 1)
+			mimeType = strings.Replace(mimeType, "text/plain", "text/css", 1)
 		}
 	}
 	return fmt.Sprintf("%s,%s,%s", compressorFlag, etag, mimeType)
