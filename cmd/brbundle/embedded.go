@@ -6,12 +6,14 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
+	"go/format"
 	"os"
 	"strings"
 	"sync"
 	"text/template"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 const embeddedSourceTemplate = `[[.BuildTag]]package [[.PackageName]]
@@ -80,7 +82,11 @@ func embedded(brotli bool, encryptionKey []byte, buildTag, packageName string, d
 	if err != nil {
 		panic(err)
 	}
-	destFile.Write(source.Bytes())
+	formattedSource, err := format.Source(source.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	destFile.Write(formattedSource)
 	color.Cyan("\nDone\n\n")
 	return nil
 }
