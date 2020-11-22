@@ -16,7 +16,9 @@ import (
 	"github.com/fatih/color"
 )
 
-const embeddedSourceTemplate = `[[.BuildTag]]package [[.PackageName]]
+const embeddedSourceTemplate = `// Code generated brbundle DO NOT EDIT.
+
+[[.BuildTag]]package [[.PackageName]]
 
 import (
     "go.pyspa.org/brbundle"
